@@ -290,7 +290,7 @@
 <body>
   <div id="setupBanner" class="setup">
     <div class="wrap">
-      BARO đang ở chế độ chưa kết nối database. Mở file <code>index.html</code>, thay <code>PASTE_SUPABASE_URL_HERE</code> và <code>PASTE_SUPABASE_ANON_KEY_HERE</code>. Không dùng localStorage, không dữ liệu giả.
+      BARO chưa kết nối được database. Kiểm tra lại Supabase URL / Publishable key trong <code>index.html</code> và cấu hình Auth Redirect URL.
     </div>
   </div>
 
@@ -644,8 +644,8 @@
     // STEP 1: Tạo Supabase project, chạy file baro_supabase_schema.sql.
     // STEP 2: Vào Supabase > Project Settings > API rồi paste URL và anon public key vào đây.
     // Lưu ý: anon key được phép public nếu RLS policies đã bật. Không bao giờ paste service_role key vào HTML.
-    const SUPABASE_URL = 'PASTE_SUPABASE_URL_HERE';
-    const SUPABASE_ANON_KEY = 'PASTE_SUPABASE_ANON_KEY_HERE';
+    const SUPABASE_URL = 'https://mkcelatoqxgpybmmvgkf.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_jX_bdwYAXXM9lS-AyOZsBA_vBRRCuhJ';
 
     const CATEGORIES = ['Sách cũ','Đồ học tập','Đồ dorm','Đồ chuyển nhà'];
     const STATUS_LABEL = { pending:'Chờ duyệt', approved:'Đã duyệt', rejected:'Từ chối', sold:'Đã bán' };
