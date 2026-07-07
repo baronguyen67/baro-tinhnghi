@@ -1,2125 +1,1126 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="BARO — marketplace đồ cũ sinh viên Việt tại Đại học Tịnh Nghi / Providence University. Mua rẻ hơn, bán dễ hơn, gặp ngay quanh campus." />
   <title>BARO — Đồ cũ sinh viên, trao lại cho người cần</title>
-  <meta name="description" content="BARO là marketplace mini dành cho sinh viên Việt tại Đại học Tịnh Nghi / Providence University: mua bán sách cũ, đồ học tập, đồ dorm và đồ chuyển nhà an toàn hơn." />
+
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root {
-      --bg: #f5f5f7;
-      --ink: #111113;
-      --muted: #6e6e73;
-      --line: rgba(17, 17, 19, 0.1);
-      --glass: rgba(255, 255, 255, 0.72);
-      --glass-strong: rgba(255, 255, 255, 0.88);
-      --dark: #06070a;
-      --dark-2: #11131a;
-      --white: #ffffff;
-      --accent: #0a84ff;
-      --accent-2: #64d2ff;
-      --green: #30d158;
-      --orange: #ff9f0a;
-      --red: #ff453a;
-      --radius-xl: 44px;
-      --radius-lg: 28px;
-      --radius-md: 18px;
-      --shadow-soft: 0 24px 80px rgba(0, 0, 0, 0.08);
-      --shadow-card: 0 18px 50px rgba(0, 0, 0, 0.12);
-      --max: 1180px;
-      --ease: cubic-bezier(.2, .8, .2, 1);
+    :root{
+      --bg:#060709;
+      --panel:#111316;
+      --panel2:#171a1f;
+      --glass:rgba(255,255,255,.075);
+      --glass2:rgba(255,255,255,.11);
+      --text:#f5f5f7;
+      --muted:#a5a9b2;
+      --soft:#717783;
+      --line:rgba(255,255,255,.12);
+      --blue:#2997ff;
+      --green:#31d158;
+      --yellow:#ffd60a;
+      --red:#ff453a;
+      --radius:28px;
+      --shadow:0 32px 90px rgba(0,0,0,.45);
+      --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Inter","Segoe UI",Roboto,Arial,sans-serif;
     }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Arial, sans-serif;
-      color: var(--ink);
-      background: var(--bg);
-      overflow-x: hidden;
-    }
-    body.menu-open { overflow: hidden; }
-    a { color: inherit; text-decoration: none; }
-    button, input, select, textarea { font: inherit; }
-    img { max-width: 100%; display: block; }
-
-    .noise {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      opacity: .18;
-      z-index: 1000;
-      background-image: radial-gradient(rgba(0,0,0,.12) 1px, transparent 1px);
-      background-size: 4px 4px;
-      mix-blend-mode: overlay;
-    }
-
-    .nav {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 999;
-      backdrop-filter: saturate(180%) blur(20px);
-      background: rgba(245, 245, 247, 0.78);
-      border-bottom: 1px solid rgba(0, 0, 0, .06);
-    }
-    .nav-inner {
-      max-width: var(--max);
-      margin: 0 auto;
-      height: 64px;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 780;
-      letter-spacing: -.04em;
-      white-space: nowrap;
-    }
-    .brand-mark {
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #111, #333 55%, #0a84ff);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), 0 12px 28px rgba(0,0,0,.18);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-size: 13px;
-      letter-spacing: -.05em;
-    }
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 22px;
-      color: rgba(17, 17, 19, .72);
-      font-size: 14px;
-    }
-    .nav-links a:hover { color: var(--ink); }
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .btn {
-      border: 0;
-      border-radius: 999px;
-      padding: 11px 17px;
-      cursor: pointer;
-      font-weight: 650;
-      letter-spacing: -.02em;
-      transition: transform .25s var(--ease), box-shadow .25s var(--ease), background .25s var(--ease), color .25s var(--ease);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 42px;
-    }
-    .btn:hover { transform: translateY(-2px); }
-    .btn:active { transform: translateY(0); }
-    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 14px 30px rgba(10, 132, 255, .25); }
-    .btn-dark { background: #111; color: #fff; box-shadow: 0 14px 36px rgba(0,0,0,.2); }
-    .btn-ghost { background: rgba(0,0,0,.06); color: var(--ink); }
-    .btn-soft { background: rgba(10,132,255,.1); color: #006edb; }
-    .btn-danger { background: rgba(255,69,58,.1); color: #d70015; }
-    .btn-small { padding: 8px 12px; min-height: 34px; font-size: 13px; }
-    .mobile-toggle {
-      display: none;
-      width: 42px;
-      height: 42px;
-      border: 0;
-      border-radius: 999px;
-      background: rgba(0,0,0,.06);
-      cursor: pointer;
-      position: relative;
-    }
-    .mobile-toggle span, .mobile-toggle::before, .mobile-toggle::after {
-      content: "";
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      height: 2px;
-      background: #111;
-      border-radius: 4px;
-      transition: transform .25s var(--ease), opacity .25s var(--ease);
-    }
-    .mobile-toggle span { top: 20px; }
-    .mobile-toggle::before { top: 14px; }
-    .mobile-toggle::after { top: 26px; }
-    body.menu-open .mobile-toggle span { opacity: 0; }
-    body.menu-open .mobile-toggle::before { transform: translateY(6px) rotate(45deg); }
-    body.menu-open .mobile-toggle::after { transform: translateY(-6px) rotate(-45deg); }
-
-    main { padding-top: 64px; }
-    .section {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 110px 20px;
-    }
-    .section-tight { padding-top: 70px; padding-bottom: 70px; }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.72);
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: -.01em;
-      backdrop-filter: blur(18px);
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 6px rgba(48,209,88,.12); }
-    h1, h2, h3, p { margin: 0; }
-    .display {
-      font-size: clamp(56px, 10vw, 128px);
-      line-height: .88;
-      letter-spacing: -.075em;
-      margin-top: 22px;
-      font-weight: 830;
-    }
-    .display .muted-word { color: #a1a1a6; }
-    .lead {
-      max-width: 720px;
-      margin-top: 24px;
-      font-size: clamp(20px, 3vw, 32px);
-      line-height: 1.18;
-      letter-spacing: -.045em;
-      color: #303035;
-      font-weight: 640;
-    }
-    .sublead {
-      max-width: 620px;
-      margin-top: 18px;
-      color: var(--muted);
-      font-size: 17px;
-      line-height: 1.6;
-    }
-    .hero {
-      min-height: calc(100vh - 64px);
-      display: grid;
-      grid-template-columns: 1fr;
-      align-items: center;
-      position: relative;
-      padding-top: 58px;
-      padding-bottom: 80px;
-    }
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, .95fr) minmax(420px, 1.05fr);
-      align-items: center;
-      gap: 30px;
-      width: 100%;
-    }
-    .hero-copy { position: relative; z-index: 2; }
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 34px;
-      align-items: center;
-    }
-    .hero-search {
-      margin-top: 28px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.82);
-      box-shadow: 0 20px 60px rgba(0,0,0,.08);
-      border: 1px solid rgba(0,0,0,.06);
-      max-width: 520px;
-    }
-    .hero-search input {
-      flex: 1;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      padding: 0 12px 0 14px;
-      min-width: 0;
-      color: var(--ink);
-    }
-    .hero-search .btn { min-height: 38px; padding: 8px 14px; }
-    .proof-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 36px;
-      max-width: 650px;
-    }
-    .proof {
-      background: rgba(255,255,255,.68);
-      border: 1px solid rgba(0,0,0,.06);
-      border-radius: 22px;
-      padding: 18px;
-      backdrop-filter: blur(18px);
-    }
-    .proof b { display: block; font-size: 24px; letter-spacing: -.04em; }
-    .proof span { display: block; margin-top: 5px; color: var(--muted); font-size: 13px; line-height: 1.35; }
-
-    .hero-stage {
-      min-height: 650px;
-      display: grid;
-      place-items: center;
-      perspective: 1200px;
-      position: relative;
-      isolation: isolate;
-    }
-    .glow {
-      position: absolute;
-      width: 520px;
-      height: 520px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(100,210,255,.6), rgba(10,132,255,.14) 42%, transparent 72%);
-      filter: blur(8px);
-      animation: breathe 7s ease-in-out infinite;
-      z-index: -2;
-    }
-    .orbital-ring {
-      position: absolute;
-      width: 560px;
-      height: 560px;
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 50%;
-      transform: rotateX(64deg) rotateZ(-24deg);
-      z-index: -1;
-    }
-    .phone-mock {
-      width: min(380px, 70vw);
-      aspect-ratio: 9 / 18.5;
-      border-radius: 54px;
-      background: linear-gradient(145deg, #171a22, #050508);
-      box-shadow: 0 42px 120px rgba(0,0,0,.34), inset 0 0 0 1px rgba(255,255,255,.14), inset 0 0 0 12px #0b0c10;
-      padding: 18px;
-      transform: rotateY(-18deg) rotateX(6deg) rotateZ(2deg);
-      animation: floatPhone 7s ease-in-out infinite;
-      position: relative;
-      overflow: hidden;
-    }
-    .phone-mock::before {
-      content: "";
-      position: absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100px;
-      height: 28px;
-      border-radius: 999px;
-      background: #050508;
-      z-index: 3;
-    }
-    .phone-screen {
-      height: 100%;
-      border-radius: 40px;
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
       background:
-        radial-gradient(circle at 70% 0%, rgba(10,132,255,.28), transparent 36%),
-        linear-gradient(180deg, #f8f8fb, #f0f2f7);
-      overflow: hidden;
-      padding: 46px 18px 18px;
-      position: relative;
+        radial-gradient(circle at 15% 0%, rgba(41,151,255,.18), transparent 33%),
+        radial-gradient(circle at 85% 10%, rgba(49,209,88,.09), transparent 30%),
+        var(--bg);
+      color:var(--text);
+      font-family:var(--sans);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
-    .screen-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: #111;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: -.03em;
-      margin-bottom: 20px;
+    body.lock{overflow:hidden}
+    a{color:inherit;text-decoration:none}
+    button,input,select,textarea{font:inherit}
+    img{max-width:100%;display:block}
+    .wrap{width:min(1180px,calc(100% - 36px));margin:auto}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border:1px solid var(--line);border-radius:999px;
+      color:#d8dce5;background:rgba(255,255,255,.055);font-size:13px;font-weight:650;
+      backdrop-filter: blur(16px);
     }
-    .screen-title { font-size: 28px; line-height: .95; letter-spacing: -.06em; font-weight: 840; max-width: 230px; }
-    .screen-search {
-      margin-top: 18px;
-      height: 40px;
-      border-radius: 999px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,.06);
-      display: flex;
-      align-items: center;
-      padding: 0 13px;
-      color: #8e8e93;
-      font-size: 13px;
+    .btn{
+      border:0;cursor:pointer;border-radius:999px;padding:12px 18px;
+      font-weight:760;color:#fff;background:var(--blue);
+      display:inline-flex;align-items:center;justify-content:center;gap:10px;
+      box-shadow:0 12px 32px rgba(41,151,255,.25);
+      transition:.22s transform,.22s background,.22s border-color,.22s opacity;
+      white-space:nowrap;
     }
-    .screen-grid {
-      margin-top: 18px;
-      display: grid;
-      gap: 12px;
+    .btn:hover{transform:translateY(-2px);background:#147ce5}
+    .btn.ghost{background:rgba(255,255,255,.08);box-shadow:none;border:1px solid var(--line)}
+    .btn.ghost:hover{background:rgba(255,255,255,.12)}
+    .btn.soft{background:rgba(41,151,255,.14);color:#dceeff;box-shadow:none;border:1px solid rgba(41,151,255,.25)}
+    .btn.green{background:var(--green);box-shadow:0 12px 32px rgba(49,209,88,.2);color:#05150b}
+    .btn.red{background:rgba(255,69,58,.16);border:1px solid rgba(255,69,58,.28);color:#ffd7d4;box-shadow:none}
+    .btn.small{padding:9px 12px;font-size:13px}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .topbar{
+      position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.08);
+      background:rgba(6,7,9,.72);backdrop-filter: blur(22px);
     }
-    .mini-card {
-      border-radius: 22px;
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(0,0,0,.06);
-      padding: 12px;
-      display: grid;
-      grid-template-columns: 58px 1fr;
-      gap: 12px;
-      align-items: center;
-      box-shadow: 0 12px 24px rgba(0,0,0,.06);
+    .nav{height:68px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:-.03em}
+    .logo{
+      width:38px;height:38px;border-radius:14px;background:
+        radial-gradient(circle at 30% 20%,#fff 0 8%,transparent 9%),
+        linear-gradient(145deg,#1b86ff,#003b83 48%,#15161a);
+      display:grid;place-items:center;box-shadow:0 14px 36px rgba(41,151,255,.25);
+      color:#fff;font-weight:900;
     }
-    .mini-img {
-      height: 58px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      font-size: 26px;
-      background: linear-gradient(145deg, #e8eefb, #fff);
+    .navlinks{display:flex;gap:8px;align-items:center}
+    .navlinks a{padding:9px 11px;color:#c9ced7;font-size:14px;border-radius:999px}
+    .navlinks a:hover{background:rgba(255,255,255,.07);color:#fff}
+    .nav-actions{display:flex;gap:10px;align-items:center}
+    .hamb{display:none}
+    .setup{
+      display:none;
+      background:linear-gradient(90deg,rgba(255,214,10,.18),rgba(41,151,255,.14));
+      border-bottom:1px solid rgba(255,255,255,.12);
+      color:#fff;
     }
-    .mini-card b { display: block; font-size: 14px; letter-spacing: -.03em; }
-    .mini-card span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
-    .pulse-card-screen {
-      position: absolute;
-      right: 20px;
-      bottom: 20px;
-      left: 20px;
-      border-radius: 26px;
-      padding: 16px;
-      color: #fff;
-      background: linear-gradient(145deg, #111, #333);
-      box-shadow: 0 24px 50px rgba(0,0,0,.18);
+    .setup .wrap{padding:12px 0;font-size:14px;line-height:1.5;color:#f6f0cc}
+    .setup code{background:rgba(0,0,0,.25);padding:2px 6px;border-radius:8px;color:#fff}
+    .hero{padding:86px 0 72px;position:relative;overflow:hidden}
+    .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}
+    .eyebrow{margin-bottom:18px}
+    h1{
+      margin:0;font-size:clamp(56px,8vw,112px);line-height:.88;letter-spacing:-.075em;
+      max-width:900px;
     }
-    .pulse-card-screen .bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.2); margin-top: 10px; overflow: hidden; }
-    .pulse-card-screen .bar i { display: block; height: 100%; width: 58%; border-radius: inherit; background: var(--green); }
-
-    .floating-chip {
-      position: absolute;
-      min-width: 130px;
-      padding: 14px 16px;
-      border-radius: 22px;
-      background: rgba(255,255,255,.76);
-      border: 1px solid rgba(255,255,255,.72);
-      backdrop-filter: blur(24px);
-      box-shadow: 0 18px 50px rgba(0,0,0,.12);
-      font-size: 14px;
-      font-weight: 760;
-      letter-spacing: -.03em;
-      animation: floatChip 6s ease-in-out infinite;
+    .lead{margin:28px 0 0;color:#c8ccd5;font-size:clamp(18px,2vw,24px);line-height:1.42;max-width:650px;letter-spacing:-.025em}
+    .hero-cta{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+    .hero-proof{display:flex;gap:12px;flex-wrap:wrap;margin-top:32px;color:#c8ccd5}
+    .proof{
+      padding:13px 15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.055);
+      min-width:155px;
     }
-    .floating-chip span { display: block; color: var(--muted); font-size: 12px; margin-top: 3px; font-weight: 650; }
-    .chip-1 { top: 110px; left: 34px; animation-delay: -.4s; }
-    .chip-2 { bottom: 138px; left: 10px; animation-delay: -1.4s; }
-    .chip-3 { right: 22px; top: 170px; animation-delay: -2.1s; }
-    .chip-4 { right: 32px; bottom: 92px; animation-delay: -3s; }
-
-    .mega-copy {
-      text-align: center;
-      max-width: 1000px;
-      margin: 0 auto;
+    .proof strong{display:block;font-size:22px;color:#fff;letter-spacing:-.04em}
+    .proof span{font-size:12.5px;color:var(--muted)}
+    .device-stage{height:min(680px,86vw);position:relative;perspective:1100px}
+    .halo{
+      position:absolute;inset:11% 6%;background:
+      radial-gradient(circle at 45% 20%,rgba(41,151,255,.42),transparent 36%),
+      radial-gradient(circle at 70% 72%,rgba(49,209,88,.14),transparent 34%);
+      filter:blur(28px);opacity:.9
     }
-    .mega-copy h2 {
-      font-size: clamp(44px, 7vw, 92px);
-      line-height: .95;
-      letter-spacing: -.07em;
-      font-weight: 840;
+    .phone{
+      position:absolute;left:50%;top:50%;width:min(360px,72vw);height:650px;
+      transform:translate(-50%,-50%) rotateX(8deg) rotateY(-17deg) rotateZ(3deg);
+      border-radius:54px;background:#07080a;padding:13px;box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.12);
+      animation:float 7s ease-in-out infinite;
     }
-    .mega-copy p {
-      margin: 22px auto 0;
-      max-width: 720px;
-      color: var(--muted);
-      font-size: clamp(18px, 2.4vw, 26px);
-      line-height: 1.35;
-      letter-spacing: -.035em;
-      font-weight: 600;
-    }
-
-    .black-wrap {
-      background: #050509;
-      color: #fff;
-      border-radius: 0 0 64px 64px;
-      position: relative;
-      overflow: hidden;
-    }
-    .black-wrap::before {
-      content: "";
-      position: absolute;
-      inset: -20% -10% auto;
-      height: 560px;
-      background: radial-gradient(circle at 45% 20%, rgba(10,132,255,.36), transparent 42%);
-      pointer-events: none;
-    }
-    .black-wrap .eyebrow { background: rgba(255,255,255,.1); color: rgba(255,255,255,.72); border-color: rgba(255,255,255,.12); }
-    .black-wrap .mega-copy p, .black-wrap .sublead { color: rgba(255,255,255,.68); }
-
-    .problem-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      margin-top: 50px;
-    }
-    .problem-card {
-      min-height: 360px;
-      border-radius: 34px;
-      background: linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,.055));
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 24px 80px rgba(0,0,0,.32);
-    }
-    .problem-card h3 { font-size: 30px; line-height: 1; letter-spacing: -.055em; }
-    .problem-card p { margin-top: 12px; color: rgba(255,255,255,.64); line-height: 1.5; }
-    .problem-visual {
-      height: 150px;
-      border-radius: 28px;
-      background: rgba(255,255,255,.08);
-      display: grid;
-      place-items: center;
-      font-size: 56px;
-      margin-top: 28px;
-      transform: translateZ(0);
-    }
-    .problem-card:hover .problem-visual { animation: pop .55s var(--ease); }
-
-    .story-panel {
-      display: grid;
-      grid-template-columns: .9fr 1.1fr;
-      gap: 24px;
-      align-items: stretch;
-      margin-top: 46px;
-    }
-    .story-copy, .story-visual {
-      border-radius: var(--radius-xl);
-      background: var(--white);
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(0,0,0,.05);
-      overflow: hidden;
-    }
-    .story-copy { padding: clamp(28px, 5vw, 56px); display: flex; flex-direction: column; justify-content: center; }
-    .story-copy h2 { font-size: clamp(42px, 6vw, 76px); line-height: .94; letter-spacing: -.07em; }
-    .story-copy p { margin-top: 20px; color: var(--muted); font-size: 18px; line-height: 1.6; }
-    .story-visual {
-      min-height: 560px;
-      display: grid;
-      place-items: center;
-      position: relative;
+    @keyframes float{0%,100%{translate:0 0}50%{translate:0 -16px}}
+    .screen{
+      height:100%;border-radius:43px;overflow:hidden;position:relative;padding:26px;
       background:
-        radial-gradient(circle at 65% 30%, rgba(100,210,255,.42), transparent 34%),
-        linear-gradient(180deg, #fff, #eef2f8);
-      perspective: 1100px;
+        linear-gradient(180deg,rgba(41,151,255,.18),transparent 34%),
+        linear-gradient(145deg,#101318,#08090b);
     }
-    .campus-map {
-      width: min(560px, 86%);
-      aspect-ratio: 1 / .86;
-      border-radius: 40px;
-      background: rgba(255,255,255,.7);
-      border: 1px solid rgba(0,0,0,.08);
-      box-shadow: 0 35px 100px rgba(0,0,0,.12);
-      transform: rotateX(58deg) rotateZ(-18deg);
-      position: relative;
-      overflow: hidden;
+    .island{position:absolute;left:50%;top:14px;transform:translateX(-50%);width:92px;height:25px;border-radius:999px;background:#020306}
+    .screen-top{display:flex;align-items:center;justify-content:space-between;margin-top:20px;font-size:12px;color:#cfd5de;font-weight:800}
+    .screen h2{font-size:30px;letter-spacing:-.055em;line-height:.92;margin:34px 0 18px;max-width:250px}
+    .searchbar{height:44px;border-radius:18px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;padding:0 14px;color:#7f8794;font-size:13px}
+    .live-list{display:grid;gap:13px;margin-top:18px}
+    .mini-card{
+      display:grid;grid-template-columns:58px 1fr;gap:13px;align-items:center;padding:12px;
+      border:1px solid rgba(255,255,255,.07);border-radius:22px;background:rgba(255,255,255,.055);
     }
-    .campus-map::before, .campus-map::after {
-      content: "";
-      position: absolute;
-      background: rgba(10,132,255,.16);
-      border-radius: 999px;
+    .mini-img{
+      height:58px;border-radius:18px;overflow:hidden;background:#191c22;position:relative;
+      display:grid;place-items:center;color:#878e9b;font-size:12px;
     }
-    .campus-map::before { width: 80%; height: 18px; left: 10%; top: 38%; transform: rotate(9deg); }
-    .campus-map::after { width: 62%; height: 18px; right: 8%; top: 58%; transform: rotate(-24deg); background: rgba(48,209,88,.16); }
-    .map-pin {
-      position: absolute;
-      width: 34px;
-      height: 34px;
-      border-radius: 50% 50% 50% 6px;
-      background: var(--accent);
-      transform: rotate(-45deg);
-      box-shadow: 0 16px 35px rgba(10,132,255,.3);
+    .mini-img img{width:100%;height:100%;object-fit:cover}
+    .mini-card b{display:block;font-size:15px;letter-spacing:-.03em}
+    .mini-card span{display:block;color:#a2a9b5;font-size:12px;margin-top:3px}
+    .pulse-card{
+      position:absolute;left:26px;right:26px;bottom:22px;border-radius:26px;background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.08);padding:18px
     }
-    .map-pin::after {
-      content: "";
-      position: absolute;
-      inset: 10px;
-      border-radius: 50%;
-      background: #fff;
+    .pulse-bar{height:8px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;margin-top:12px}
+    .pulse-bar i{display:block;height:100%;width:42%;background:linear-gradient(90deg,var(--green),#5df2ff);border-radius:999px}
+    .float-note{
+      position:absolute;border:1px solid var(--line);background:rgba(16,18,22,.62);backdrop-filter:blur(18px);
+      border-radius:20px;padding:13px 15px;color:#fff;box-shadow:0 22px 70px rgba(0,0,0,.24);
+      font-size:13px;font-weight:800;
     }
-    .pin-1 { top: 23%; left: 26%; }
-    .pin-2 { top: 54%; left: 57%; background: var(--green); }
-    .pin-3 { top: 39%; left: 74%; background: var(--orange); }
-    .map-label {
-      position: absolute;
-      padding: 12px 14px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.86);
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: 0 14px 40px rgba(0,0,0,.12);
-      font-weight: 780;
-      letter-spacing: -.03em;
-      backdrop-filter: blur(18px);
+    .float-note span{display:block;color:#aab1bd;font-size:12px;margin-top:3px;font-weight:650}
+    .note-a{left:0;top:22%}.note-b{right:0;top:38%}.note-c{left:7%;bottom:17%}.note-d{right:4%;bottom:22%}
+    section{padding:76px 0;border-top:1px solid rgba(255,255,255,.06)}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:28px;margin-bottom:30px}
+    .kicker{color:var(--blue);font-weight:850;font-size:14px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px}
+    h2.title{font-size:clamp(42px,6vw,76px);line-height:.92;letter-spacing:-.065em;margin:0;max-width:760px}
+    .sub{color:#b0b6c1;line-height:1.58;font-size:17px;max-width:520px;margin:0}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+    .story-card,.panel{
+      border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+      box-shadow:0 24px 80px rgba(0,0,0,.20);overflow:hidden;
     }
-    .label-1 { top: 86px; right: 70px; }
-    .label-2 { bottom: 88px; left: 64px; }
-
-    .feature-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-top: 46px;
+    .story-card{padding:28px;min-height:360px;position:relative}
+    .story-card h3{font-size:38px;letter-spacing:-.055em;line-height:1;margin:0 0 14px}
+    .story-card p{color:#b7bdc7;line-height:1.65;margin:0;max-width:560px}
+    .founder-photo{
+      position:absolute;right:28px;bottom:0;width:min(310px,45%);height:360px;border-radius:34px 34px 0 0;overflow:hidden;
+      box-shadow:0 24px 80px rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.12);
     }
-    .feature-card {
-      min-height: 250px;
-      border-radius: 34px;
-      background: #fff;
-      padding: 26px;
-      box-shadow: var(--shadow-soft);
-      border: 1px solid rgba(0,0,0,.05);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+    .founder-photo img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:saturate(.95) contrast(1.03)}
+    .feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .feature{
+      padding:24px;border-radius:24px;background:rgba(255,255,255,.055);border:1px solid var(--line);min-height:170px
     }
-    .feature-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-card); }
-    .feature-icon { font-size: 42px; }
-    .feature-card h3 { margin-top: 20px; font-size: 24px; line-height: 1.05; letter-spacing: -.05em; }
-    .feature-card p { margin-top: 10px; color: var(--muted); line-height: 1.45; }
-
-    .market-shell {
-      background: #fff;
-      border-radius: 54px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: 0 30px 90px rgba(0,0,0,.1);
-      overflow: hidden;
-      margin-top: 46px;
+    .icon{
+      width:46px;height:46px;border-radius:15px;display:grid;place-items:center;margin-bottom:22px;
+      background:rgba(41,151,255,.12);border:1px solid rgba(41,151,255,.22);color:#bfe2ff
     }
-    .market-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 22px;
-      background: rgba(255,255,255,.78);
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      position: sticky;
-      top: 64px;
-      z-index: 10;
-      backdrop-filter: blur(20px);
+    .icon svg{width:24px;height:24px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    .feature h3{font-size:19px;letter-spacing:-.035em;margin:0 0 8px}
+    .feature p{margin:0;color:#a8afbb;line-height:1.48;font-size:14px}
+    .market-toolbar{
+      display:grid;grid-template-columns:1.3fr repeat(4, minmax(120px,.5fr));gap:10px;margin-bottom:18px
     }
-    .market-title h3 { font-size: 26px; letter-spacing: -.05em; }
-    .market-title p { margin-top: 4px; color: var(--muted); font-size: 14px; }
-    .filters {
-      padding: 18px 22px 4px;
-      display: grid;
-      grid-template-columns: 1.5fr repeat(5, minmax(120px, 1fr));
-      gap: 10px;
+    .field,input,select,textarea{
+      width:100%;border:1px solid var(--line);background:rgba(255,255,255,.065);color:#fff;
+      border-radius:18px;padding:13px 14px;outline:none;
     }
-    .field, .filters input, .filters select, .form input, .form select, .form textarea {
-      width: 100%;
-      border: 1px solid rgba(0,0,0,.08);
-      background: #f7f7f8;
-      border-radius: 16px;
-      min-height: 46px;
-      padding: 0 14px;
-      outline: none;
-      color: var(--ink);
-      transition: border .2s, background .2s, box-shadow .2s;
+    select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#98a0ad 50%),linear-gradient(135deg,#98a0ad 50%,transparent 50%);background-position:calc(100% - 18px) 54%,calc(100% - 13px) 54%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+    option{background:#111;color:#fff}
+    textarea{min-height:110px;resize:vertical}
+    label{font-size:13px;color:#c6ccd6;font-weight:750;display:block;margin:0 0 8px}
+    .listing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .listing{
+      border:1px solid var(--line);border-radius:26px;background:rgba(255,255,255,.055);overflow:hidden;display:flex;flex-direction:column;min-height:390px;
+      transition:.2s transform,.2s border-color,.2s background;
     }
-    .form textarea { min-height: 112px; padding: 13px 14px; resize: vertical; }
-    .filters input:focus, .filters select:focus, .form input:focus, .form select:focus, .form textarea:focus {
-      border-color: rgba(10,132,255,.55);
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(10,132,255,.1);
+    .listing:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.23);background:rgba(255,255,255,.075)}
+    .listing-img{height:210px;background:linear-gradient(135deg,#1a1d23,#0d0f12);position:relative;overflow:hidden}
+    .listing-img img{width:100%;height:100%;object-fit:cover}
+    .placeholder-art{position:absolute;inset:0;display:grid;place-items:center;color:#7f8794;font-size:13px;background:
+      radial-gradient(circle at 30% 20%,rgba(41,151,255,.18),transparent 32%),
+      radial-gradient(circle at 68% 80%,rgba(49,209,88,.12),transparent 32%),
+      linear-gradient(145deg,#15181e,#090a0d)}
+    .status{
+      position:absolute;left:12px;top:12px;padding:7px 10px;border-radius:999px;font-size:12px;font-weight:850;
+      background:rgba(0,0,0,.62);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12)
     }
-    .product-grid {
-      padding: 22px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 18px;
-      min-height: 320px;
+    .status.pending{color:#ffe88a}.status.approved{color:#baffc8}.status.rejected{color:#ffd0cc}.status.sold{color:#cbd1db}
+    .listing-body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}
+    .listing h3{font-size:21px;margin:0;letter-spacing:-.04em;line-height:1.05}
+    .listing .desc{color:#aeb5c0;line-height:1.46;font-size:14px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .meta{display:flex;flex-wrap:wrap;gap:8px}
+    .tag{font-size:12px;color:#d7dce5;padding:7px 9px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.09);border-radius:999px}
+    .price{font-size:27px;font-weight:900;letter-spacing:-.05em;margin-top:auto}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .empty{
+      border:1px dashed rgba(255,255,255,.2);border-radius:28px;padding:44px;text-align:center;color:#aeb5c0;background:rgba(255,255,255,.035)
     }
-    .product-card {
-      border-radius: 30px;
-      border: 1px solid rgba(0,0,0,.06);
-      background: #fff;
-      overflow: hidden;
-      box-shadow: 0 12px 32px rgba(0,0,0,.06);
-      transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+    .empty strong{display:block;color:#fff;font-size:24px;letter-spacing:-.04em;margin-bottom:8px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-grid .full{grid-column:1/-1}
+    .notice{border:1px solid rgba(41,151,255,.2);background:rgba(41,151,255,.08);border-radius:22px;padding:18px;color:#d9ecff;line-height:1.55;margin-bottom:18px}
+    .admin-only,.auth-only{display:none}
+    .table-wrap{overflow:auto;border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.04)}
+    table{width:100%;border-collapse:collapse;min-width:760px}
+    th,td{text-align:left;padding:14px;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;vertical-align:top}
+    th{color:#cfd5dd;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+    tr:last-child td{border-bottom:0}
+    .pulse-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+    .stat{padding:18px;border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.055)}
+    .stat span{display:block;color:#aeb5c0;font-size:12px;font-weight:700}
+    .stat strong{display:block;font-size:30px;margin-top:6px;letter-spacing:-.05em}
+    .modal{
+      position:fixed;inset:0;z-index:100;display:none;place-items:center;background:rgba(0,0,0,.62);backdrop-filter:blur(18px);padding:20px;
     }
-    .product-card:hover { transform: translateY(-7px); box-shadow: 0 24px 58px rgba(0,0,0,.12); }
-    .product-image {
-      height: 210px;
-      background: linear-gradient(145deg, #eef2f8, #fff);
-      display: grid;
-      place-items: center;
-      color: #a1a1a6;
-      font-size: 42px;
-      position: relative;
-      overflow: hidden;
+    .modal.show{display:grid}
+    .modal-card{width:min(520px,100%);border:1px solid var(--line);border-radius:30px;background:#111317;box-shadow:var(--shadow);padding:24px}
+    .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .modal h3{margin:0;font-size:30px;letter-spacing:-.05em}
+    .x{width:38px;height:38px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:#fff;cursor:pointer}
+    .tabs{display:flex;gap:8px;margin-bottom:16px}
+    .tab{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.055);color:#fff;border-radius:15px;padding:10px;cursor:pointer;font-weight:800}
+    .tab.active{background:var(--blue);border-color:var(--blue)}
+    .msg{margin-top:14px;color:#c4cad4;line-height:1.45}
+    .footer{padding:48px 0;color:#9da4af;border-top:1px solid rgba(255,255,255,.08)}
+    .footer-grid{display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap}
+    .footer strong{color:#fff}
+    .reveal{opacity:0;transform:translateY(24px);transition:.7s ease}
+    .reveal.on{opacity:1;transform:none}
+    @media (max-width:980px){
+      .hero-grid,.grid-2{grid-template-columns:1fr}
+      .device-stage{height:680px}
+      .feature-grid,.pulse-grid{grid-template-columns:repeat(2,1fr)}
+      .listing-grid{grid-template-columns:repeat(2,1fr)}
+      .market-toolbar{grid-template-columns:1fr 1fr}
+      .founder-photo{position:relative;right:auto;bottom:auto;width:100%;height:420px;margin-top:26px}
     }
-    .product-image img { width: 100%; height: 100%; object-fit: cover; }
-    .status-pill {
-      position: absolute;
-      left: 14px;
-      top: 14px;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.86);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(0,0,0,.08);
-      font-size: 12px;
-      font-weight: 760;
-    }
-    .product-body { padding: 18px; }
-    .product-body h4 { margin: 0; font-size: 21px; letter-spacing: -.04em; }
-    .product-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      background: rgba(0,0,0,.055);
-      color: #494951;
-      padding: 7px 10px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .price { margin-top: 14px; font-size: 24px; font-weight: 830; letter-spacing: -.045em; }
-    .product-desc { margin-top: 8px; color: var(--muted); line-height: 1.45; font-size: 14px; min-height: 40px; }
-    .product-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-    .empty-state {
-      grid-column: 1 / -1;
-      min-height: 300px;
-      border-radius: 34px;
-      background: linear-gradient(145deg, #f3f5f9, #fff);
-      border: 1px dashed rgba(0,0,0,.16);
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 36px;
-    }
-    .empty-state h3 { font-size: 34px; letter-spacing: -.06em; }
-    .empty-state p { max-width: 480px; margin: 12px auto 0; color: var(--muted); line-height: 1.5; }
-
-    .pulse-layout {
-      display: grid;
-      grid-template-columns: .9fr 1.1fr;
-      gap: 22px;
-      margin-top: 46px;
-      align-items: start;
-    }
-    .pulse-copy {
-      position: sticky;
-      top: 96px;
-      background: #fff;
-      border-radius: 42px;
-      padding: 42px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: var(--shadow-soft);
-    }
-    .pulse-copy h2 { font-size: clamp(42px, 5vw, 70px); line-height: .96; letter-spacing: -.07em; }
-    .pulse-copy p { margin-top: 18px; color: var(--muted); line-height: 1.6; }
-    .dashboard {
-      border-radius: 42px;
-      background: #0b0d12;
-      color: #fff;
-      padding: 22px;
-      box-shadow: 0 30px 100px rgba(0,0,0,.24);
-      border: 1px solid rgba(255,255,255,.1);
-    }
-    .dashboard-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 10px 20px;
-    }
-    .dashboard-head h3 { font-size: 28px; letter-spacing: -.055em; }
-    .live-badge { border: 1px solid rgba(48,209,88,.35); background: rgba(48,209,88,.1); color: #a8ffbf; padding: 8px 11px; border-radius: 999px; font-size: 12px; font-weight: 800; }
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-    .metric {
-      min-height: 132px;
-      border-radius: 26px;
-      background: rgba(255,255,255,.075);
-      border: 1px solid rgba(255,255,255,.1);
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .metric span { color: rgba(255,255,255,.58); font-size: 13px; }
-    .metric b { font-size: 34px; letter-spacing: -.06em; }
-    .insight-box {
-      margin-top: 12px;
-      border-radius: 28px;
-      background: rgba(255,255,255,.075);
-      border: 1px solid rgba(255,255,255,.1);
-      padding: 20px;
-    }
-    .insight-box h4 { margin: 0 0 14px; font-size: 18px; letter-spacing: -.04em; }
-    .insight-line { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.1); color: rgba(255,255,255,.75); }
-    .insight-line:first-of-type { border-top: 0; }
-    .insight-line b { color: #fff; }
-
-    .flow {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 46px;
-    }
-    .flow-card {
-      border-radius: 34px;
-      background: #fff;
-      padding: 30px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: var(--shadow-soft);
-    }
-    .flow-number { font-size: 13px; color: var(--accent); font-weight: 820; }
-    .flow-card h3 { margin-top: 18px; font-size: 30px; line-height: 1.02; letter-spacing: -.055em; }
-    .flow-card p { margin-top: 12px; color: var(--muted); line-height: 1.5; }
-
-    .founder-card {
-      display: grid;
-      grid-template-columns: .95fr 1.05fr;
-      gap: 24px;
-      align-items: stretch;
-      background: #fff;
-      border-radius: 56px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: var(--shadow-soft);
-      overflow: hidden;
-      margin-top: 46px;
-    }
-    .founder-visual {
-      min-height: 520px;
-      background:
-        radial-gradient(circle at 50% 10%, rgba(10,132,255,.32), transparent 38%),
-        linear-gradient(180deg, #f8f9fb, #e9edf5);
-      display: grid;
-      place-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .avatar-3d {
-      width: 270px;
-      height: 330px;
-      position: relative;
-      transform-style: preserve-3d;
-      animation: floatPhone 8s ease-in-out infinite;
-    }
-    .avatar-card {
-      position: absolute;
-      inset: 0;
-      border-radius: 42px;
-      background: linear-gradient(145deg, #111, #3a3a40);
-      box-shadow: 0 35px 90px rgba(0,0,0,.26);
-      transform: rotateY(-13deg) rotateX(5deg);
-      padding: 24px;
-      color: #fff;
-      overflow: hidden;
-    }
-    .avatar-card::before {
-      content: "";
-      position: absolute;
-      inset: auto -30px -50px;
-      height: 170px;
-      background: radial-gradient(circle, rgba(10,132,255,.72), transparent 70%);
-    }
-    .avatar-face {
-      width: 120px;
-      height: 120px;
-      border-radius: 38px;
-      background: linear-gradient(145deg, #fff, #dfe8f7);
-      display: grid;
-      place-items: center;
-      color: #111;
-      font-size: 48px;
-      margin-bottom: 24px;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,.08);
-    }
-    .avatar-card h3 { font-size: 42px; line-height: .9; letter-spacing: -.07em; }
-    .avatar-card p { margin-top: 12px; color: rgba(255,255,255,.68); line-height: 1.45; }
-    .founder-copy { padding: clamp(30px, 5vw, 58px); display: flex; flex-direction: column; justify-content: center; }
-    .founder-copy h2 { font-size: clamp(42px, 5vw, 76px); line-height: .94; letter-spacing: -.07em; }
-    .founder-copy p { margin-top: 18px; color: var(--muted); font-size: 18px; line-height: 1.62; }
-
-    .launch-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 46px;
-    }
-    .launch-card {
-      min-height: 220px;
-      border-radius: 32px;
-      background: #fff;
-      padding: 24px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: var(--shadow-soft);
-    }
-    .launch-card small { color: var(--accent); font-weight: 820; }
-    .launch-card h3 { margin-top: 18px; font-size: 25px; line-height: 1.05; letter-spacing: -.055em; }
-    .launch-card p { margin-top: 12px; color: var(--muted); line-height: 1.45; }
-
-    .admin-panel {
-      margin-top: 46px;
-      display: none;
-    }
-    .admin-panel.is-visible { display: block; }
-    .admin-tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-    .admin-view { display: none; }
-    .admin-view.is-visible { display: block; }
-    .admin-list {
-      display: grid;
-      gap: 12px;
-    }
-    .admin-item {
-      background: #fff;
-      border-radius: 26px;
-      border: 1px solid rgba(0,0,0,.06);
-      box-shadow: var(--shadow-soft);
-      padding: 18px;
-      display: grid;
-      grid-template-columns: 90px 1fr auto;
-      gap: 16px;
-      align-items: center;
-    }
-    .admin-thumb {
-      width: 90px;
-      height: 90px;
-      border-radius: 22px;
-      background: #f1f3f7;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      color: #999;
-      font-size: 28px;
-    }
-    .admin-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .admin-info h4 { margin: 0; font-size: 20px; letter-spacing: -.04em; }
-    .admin-info p { margin: 7px 0 0; color: var(--muted); line-height: 1.4; }
-    .admin-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
-    .user-row { grid-template-columns: 1fr auto; }
-
-    .cta-band {
-      max-width: var(--max);
-      margin: 0 auto;
-      padding: 110px 20px 130px;
-    }
-    .cta-card {
-      min-height: 520px;
-      border-radius: 58px;
-      background:
-        radial-gradient(circle at 50% 15%, rgba(100,210,255,.34), transparent 36%),
-        linear-gradient(145deg, #101217, #050509);
-      color: #fff;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      padding: 42px;
-      box-shadow: 0 40px 120px rgba(0,0,0,.28);
-      overflow: hidden;
-      position: relative;
-    }
-    .cta-card::after {
-      content: "BARO";
-      position: absolute;
-      bottom: -42px;
-      font-size: clamp(120px, 22vw, 280px);
-      line-height: .75;
-      letter-spacing: -.1em;
-      font-weight: 900;
-      color: rgba(255,255,255,.045);
-    }
-    .cta-content { position: relative; z-index: 2; max-width: 850px; }
-    .cta-card h2 { font-size: clamp(48px, 8vw, 96px); line-height: .9; letter-spacing: -.075em; }
-    .cta-card p { margin: 20px auto 0; max-width: 620px; color: rgba(255,255,255,.68); font-size: 20px; line-height: 1.45; }
-    .cta-actions { margin-top: 30px; display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
-
-    footer {
-      border-top: 1px solid rgba(0,0,0,.08);
-      padding: 34px 20px;
-      color: var(--muted);
-    }
-    .footer-inner { max-width: var(--max); margin: 0 auto; display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      z-index: 2000;
-      display: none;
-      place-items: center;
-      background: rgba(0,0,0,.44);
-      backdrop-filter: blur(18px);
-      padding: 18px;
-    }
-    .modal-backdrop.is-visible { display: grid; }
-    .modal {
-      width: min(720px, 100%);
-      max-height: 92vh;
-      overflow: auto;
-      background: rgba(255,255,255,.94);
-      border-radius: 34px;
-      box-shadow: 0 30px 120px rgba(0,0,0,.3);
-      border: 1px solid rgba(255,255,255,.7);
-    }
-    .modal-head {
-      padding: 22px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-    }
-    .modal-head h3 { font-size: 28px; letter-spacing: -.055em; }
-    .close-btn { width: 42px; height: 42px; border: 0; border-radius: 999px; background: rgba(0,0,0,.06); cursor: pointer; font-size: 22px; }
-    .modal-body { padding: 22px; }
-    .auth-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
-    .form { display: grid; gap: 12px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form small { color: var(--muted); line-height: 1.45; }
-    .hidden { display: none !important; }
-    .toast {
-      position: fixed;
-      left: 50%;
-      bottom: 24px;
-      transform: translateX(-50%) translateY(120px);
-      z-index: 3000;
-      background: rgba(17,17,19,.92);
-      color: #fff;
-      border-radius: 999px;
-      padding: 13px 18px;
-      box-shadow: 0 18px 60px rgba(0,0,0,.28);
-      transition: transform .35s var(--ease);
-      max-width: min(580px, calc(100vw - 28px));
-      text-align: center;
-      line-height: 1.35;
-    }
-    .toast.is-visible { transform: translateX(-50%) translateY(0); }
-
-    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
-    .reveal.in-view { opacity: 1; transform: translateY(0); }
-
-    @keyframes floatPhone {
-      0%, 100% { transform: rotateY(-18deg) rotateX(6deg) rotateZ(2deg) translateY(0); }
-      50% { transform: rotateY(-12deg) rotateX(8deg) rotateZ(-1deg) translateY(-22px); }
-    }
-    @keyframes floatChip {
-      0%, 100% { transform: translate3d(0,0,0); }
-      50% { transform: translate3d(0,-18px,0); }
-    }
-    @keyframes breathe {
-      0%, 100% { transform: scale(.95); opacity: .72; }
-      50% { transform: scale(1.08); opacity: 1; }
-    }
-    @keyframes pop {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.08) rotate(-2deg); }
-      100% { transform: scale(1); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-      .reveal { opacity: 1; transform: none; }
-    }
-
-    @media (max-width: 1060px) {
-      .hero-grid, .story-panel, .pulse-layout, .founder-card { grid-template-columns: 1fr; }
-      .hero-stage { min-height: 560px; order: -1; }
-      .problem-grid, .feature-row { grid-template-columns: repeat(2, 1fr); }
-      .filters { grid-template-columns: 1fr 1fr; }
-      .product-grid { grid-template-columns: repeat(2, 1fr); }
-      .launch-grid { grid-template-columns: repeat(2, 1fr); }
-      .pulse-copy { position: static; }
-    }
-
-    @media (max-width: 760px) {
-      .nav-inner { height: 58px; }
-      main { padding-top: 58px; }
-      .mobile-toggle { display: inline-block; }
-      .nav-links {
-        position: fixed;
-        inset: 58px 12px auto;
-        display: none;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 4px;
-        background: rgba(255,255,255,.94);
-        border: 1px solid rgba(0,0,0,.06);
-        border-radius: 24px;
-        padding: 12px;
-        box-shadow: var(--shadow-card);
-        backdrop-filter: blur(20px);
-      }
-      body.menu-open .nav-links { display: flex; }
-      .nav-links a { padding: 13px 14px; border-radius: 16px; }
-      .nav-links a:hover { background: rgba(0,0,0,.05); }
-      .nav-actions { display: none; }
-      body.menu-open .nav-actions {
-        display: flex;
-        position: fixed;
-        inset: auto 12px 12px;
-        background: rgba(255,255,255,.94);
-        border: 1px solid rgba(0,0,0,.06);
-        border-radius: 24px;
-        padding: 12px;
-        box-shadow: var(--shadow-card);
-        backdrop-filter: blur(20px);
-      }
-      .section, .cta-band { padding-left: 14px; padding-right: 14px; }
-      .section { padding-top: 78px; padding-bottom: 78px; }
-      .hero { padding-top: 20px; }
-      .display { font-size: clamp(58px, 17vw, 84px); }
-      .lead { font-size: 22px; }
-      .hero-stage { min-height: 480px; }
-      .phone-mock { width: min(320px, 82vw); }
-      .floating-chip { display: none; }
-      .orbital-ring { width: 420px; height: 420px; }
-      .glow { width: 390px; height: 390px; }
-      .proof-row, .problem-grid, .feature-row, .flow, .metric-grid, .launch-grid, .product-grid, .filters { grid-template-columns: 1fr; }
-      .story-visual, .founder-visual { min-height: 420px; }
-      .market-top { flex-direction: column; align-items: stretch; top: 58px; }
-      .market-shell { border-radius: 34px; }
-      .form-row { grid-template-columns: 1fr; }
-      .admin-item { grid-template-columns: 1fr; }
-      .admin-thumb { width: 100%; height: 170px; }
-      .admin-actions { justify-content: flex-start; }
-      .cta-card { min-height: 460px; border-radius: 42px; }
-      .footer-inner { flex-direction: column; }
+    @media (max-width:720px){
+      .wrap{width:min(100% - 24px,1180px)}
+      .navlinks{display:none}
+      .hamb{display:inline-flex}
+      .hero{padding-top:52px}
+      h1{font-size:58px}
+      .lead{font-size:18px}
+      .phone{width:315px;height:590px}
+      .screen{padding:22px}
+      .float-note{display:none}
+      .feature-grid,.listing-grid,.pulse-grid,.market-toolbar,.form-grid{grid-template-columns:1fr}
+      .section-head{display:block}
+      .sub{margin-top:16px}
+      section{padding:58px 0}
+      .story-card{padding:22px}
+      .story-card h3{font-size:32px}
+      .nav-actions .btn.ghost{display:none}
     }
   </style>
 </head>
-<body>
-  <div class="noise" aria-hidden="true"></div>
 
-  <nav class="nav" aria-label="Main navigation">
-    <div class="nav-inner">
-      <a class="brand" href="#home" aria-label="BARO Home">
-        <span class="brand-mark">B</span>
+<body>
+  <div id="setupBanner" class="setup">
+    <div class="wrap">
+      BARO đang ở chế độ chưa kết nối database. Mở file <code>index.html</code>, thay <code>PASTE_SUPABASE_URL_HERE</code> và <code>PASTE_SUPABASE_ANON_KEY_HERE</code>. Không dùng localStorage, không dữ liệu giả.
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="wrap nav">
+      <a class="brand" href="#home" aria-label="BARO home">
+        <span class="logo">B</span>
         <span>BARO</span>
       </a>
-
-      <div class="nav-links" id="navLinks">
-        <a href="#problem">Vấn đề</a>
-        <a href="#solution">Giải pháp</a>
+      <nav class="navlinks">
         <a href="#marketplace">Marketplace</a>
-        <a href="#pulse">BARO Pulse</a>
-        <a href="#founder">Founder</a>
-        <a href="#admin" data-admin-only>Admin</a>
+        <a href="#sell">Đăng bán</a>
+        <a href="#my">Tin của tôi</a>
+        <a href="#admin" class="admin-link" style="display:none">Admin</a>
+        <a href="#trust">An toàn</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="btn ghost small" id="refreshBtn">Refresh</button>
+        <button class="btn small" id="authBtn">Đăng nhập</button>
+        <button class="btn ghost small hamb" id="menuBtn">Menu</button>
       </div>
-
-      <div class="nav-actions" id="navActions">
-        <button class="btn btn-ghost btn-small" data-auth-open>Đăng nhập</button>
-        <button class="btn btn-primary btn-small" data-open-post data-auth-only>Đăng bán</button>
-      </div>
-
-      <button class="mobile-toggle" id="mobileToggle" aria-label="Open menu" aria-expanded="false"><span></span></button>
     </div>
-  </nav>
+  </header>
 
-  <main>
-    <section class="section hero" id="home">
-      <div class="hero-grid">
-        <div class="hero-copy reveal">
-          <div class="eyebrow"><span class="dot"></span>Marketplace sinh viên Việt tại Providence University</div>
-          <h1 class="display">Đồ cũ sinh viên.<br><span class="muted-word">Trao lại</span> cho người cần.</h1>
-          <p class="lead">BARO giúp sinh viên Việt mua rẻ hơn, bán dễ hơn, và gặp ngay quanh campus.</p>
-          <p class="sublead">Một MVP marketplace có admin duyệt bài, search/filter rõ ràng và dashboard BARO Pulse tính từ dữ liệu thật — không dùng số ảo.</p>
-
-          <div class="hero-search" role="search">
-            <input id="heroSearch" type="search" placeholder="Tìm sách tiếng Trung, nồi điện, đèn học..." autocomplete="off" />
-            <button class="btn btn-dark" id="heroSearchBtn">Tìm</button>
+  <main id="home">
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="eyebrow pill">Marketplace thật cho sinh viên Việt tại Tịnh Nghi</div>
+          <h1>Đồ cũ sinh viên, trao lại cho người cần.</h1>
+          <p class="lead">
+            BARO giúp sinh viên Việt tại Providence University mua bán sách cũ, đồ học tập, đồ dorm và đồ chuyển nhà với dữ liệu thật, tài khoản thật, bài đăng thật và admin duyệt bài thật.
+          </p>
+          <div class="hero-cta">
+            <a class="btn" href="#marketplace">Xem marketplace</a>
+            <a class="btn ghost" href="#sell">Đăng bán một món</a>
           </div>
-
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#marketplace">Khám phá marketplace</a>
-            <button class="btn btn-ghost" data-open-post data-needs-auth>Đăng món đầu tiên</button>
-          </div>
-
-          <div class="proof-row" aria-label="BARO proof points">
-            <div class="proof"><b id="proofUsers">0</b><span>User thật trong trình duyệt này</span></div>
-            <div class="proof"><b id="proofProducts">0</b><span>Bài đăng thật, chờ admin duyệt</span></div>
-            <div class="proof"><b>PU</b><span>Bắt đầu từ cộng đồng Tịnh Nghi</span></div>
+          <div class="hero-proof">
+            <div class="proof"><strong id="heroUsers">—</strong><span>User thật</span></div>
+            <div class="proof"><strong id="heroListings">—</strong><span>Bài đăng thật</span></div>
+            <div class="proof"><strong id="heroPending">—</strong><span>Chờ admin duyệt</span></div>
           </div>
         </div>
 
-        <div class="hero-stage reveal" aria-hidden="true">
-          <div class="glow"></div>
-          <div class="orbital-ring"></div>
-          <div class="floating-chip chip-1">Sách cũ<span>TOCFL · TOEIC · giáo trình</span></div>
-          <div class="floating-chip chip-2">Đồ dorm<span>Đèn · nồi · quạt</span></div>
-          <div class="floating-chip chip-3">Gặp ở campus<span>KTX · thư viện · FamilyMart</span></div>
-          <div class="floating-chip chip-4">Admin duyệt<span>Giảm spam · rõ thông tin</span></div>
-
-          <div class="phone-mock">
-            <div class="phone-screen">
-              <div class="screen-top"><span>BARO</span><span>● Live</span></div>
-              <div class="screen-title">Marketplace cho đời sống sinh viên.</div>
-              <div class="screen-search">Search đồ cần mua...</div>
-              <div class="screen-grid">
-                <div class="mini-card"><div class="mini-img">📚</div><div><b>Sách tiếng Trung</b><span>NT$180 · Thư viện</span></div></div>
-                <div class="mini-card"><div class="mini-img">💡</div><div><b>Đèn học dorm</b><span>NT$120 · KTX</span></div></div>
-                <div class="mini-card"><div class="mini-img">🍲</div><div><b>Nồi điện mini</b><span>NT$250 · FamilyMart</span></div></div>
+        <div class="device-stage" aria-hidden="true">
+          <div class="halo"></div>
+          <div class="phone">
+            <div class="screen">
+              <div class="island"></div>
+              <div class="screen-top"><span>BARO</span><span>● Live DB</span></div>
+              <h2>Marketplace cho đời sống sinh viên.</h2>
+              <div class="searchbar">Search đồ cần mua...</div>
+              <div id="phoneLiveList" class="live-list">
+                <div class="mini-card">
+                  <div class="mini-img">Live</div>
+                  <div><b>Đang tải dữ liệu thật</b><span>Không dùng demo data</span></div>
+                </div>
               </div>
-              <div class="pulse-card-screen">
+              <div class="pulse-card">
                 <b>BARO Pulse</b>
-                <div class="bar"><i></i></div>
+                <div class="pulse-bar"><i id="phonePulseBar"></i></div>
               </div>
             </div>
           </div>
+          <div class="float-note note-a">Sách cũ <span>TOCFL · TOEIC · Giáo trình</span></div>
+          <div class="float-note note-b">Khu hẹn gặp <span>Thư viện · KTX · FamilyMart</span></div>
+          <div class="float-note note-c">Admin duyệt <span>Giảm spam, tăng niềm tin</span></div>
+          <div class="float-note note-d">Moving-out sale <span>Trao lại cho khóa sau</span></div>
         </div>
       </div>
     </section>
 
-    <section class="black-wrap" id="problem">
-      <div class="section">
-        <div class="mega-copy reveal">
-          <div class="eyebrow"><span class="dot"></span>Problem</div>
-          <h2>Món đồ còn giá trị thường bị trôi mất.</h2>
-          <p>Sinh viên có đồ còn dùng tốt. Sinh viên khác lại đang cần. Nhưng group chat và bài Facebook không được sinh ra để quản lý marketplace.</p>
+    <section id="story">
+      <div class="wrap grid-2">
+        <article class="story-card reveal">
+          <div class="kicker">Founder story</div>
+          <h3>Không làm để mô phỏng. Làm để sinh viên dùng thật.</h3>
+          <p>
+            Mình là Baro, cựu sinh viên Đại học Tịnh Nghi. BARO ra đời từ một vấn đề rất thật: đồ còn dùng tốt nhưng không biết trao lại cho ai, còn người cần thì lại khó tìm.
+          </p>
+          <div class="founder-photo">
+            <img src="data:image/webp;base64,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" alt="Founder Baro">
+          </div>
+        </article>
+        <article class="story-card reveal">
+          <div class="kicker">Real product rules</div>
+          <h3>Không fake user. Không fake product. Không fake số liệu.</h3>
+          <p>
+            Mọi dữ liệu trên BARO được lưu bằng Supabase: user đăng ký thật, bài đăng lưu trong database thật, ảnh sản phẩm upload lên cloud storage, admin duyệt trước khi hiển thị công khai.
+          </p>
+          <div style="position:absolute;left:28px;right:28px;bottom:28px;display:grid;gap:10px">
+            <div class="pill">Database thật</div>
+            <div class="pill">Auth thật</div>
+            <div class="pill">Image storage thật</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Why BARO works</div>
+            <h2 class="title">Ít bước hơn. Rõ trạng thái hơn. Tin cậy hơn.</h2>
+          </div>
+          <p class="sub">Tất cả tính năng dưới đây dùng dữ liệu thật sau khi bạn kết nối Supabase, không còn localStorage trên từng máy.</p>
         </div>
 
-        <div class="problem-grid">
-          <article class="problem-card reveal">
-            <div>
-              <h3>Mua mới quá tốn.</h3>
-              <p>Sách, đồ dorm, đồ học tập có khi chỉ dùng một học kỳ nhưng vẫn phải mua mới với giá cao.</p>
-            </div>
-            <div class="problem-visual">💸</div>
+        <div class="feature-grid">
+          <article class="feature reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+            <h3>Search thật</h3><p>Lưu từ khóa tìm kiếm vào database để biết sinh viên đang cần gì.</p>
           </article>
-          <article class="problem-card reveal">
-            <div>
-              <h3>Bài đăng dễ trôi.</h3>
-              <p>Facebook/LINE phù hợp để nói chuyện, nhưng khó search, khó lọc và khó tìm lại món cần mua.</p>
-            </div>
-            <div class="problem-visual">🫥</div>
+          <article class="feature reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></svg></div>
+            <h3>Filter rõ</h3><p>Lọc theo danh mục, giá, tình trạng và khu vực hẹn gặp quanh campus.</p>
           </article>
-          <article class="problem-card reveal">
-            <div>
-              <h3>Thiếu niềm tin.</h3>
-              <p>Người mua sợ sai mô tả. Người bán sợ spam. Cộng đồng cần một lớp duyệt bài rõ ràng hơn.</p>
-            </div>
-            <div class="problem-visual">🛡️</div>
+          <article class="feature reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z"/><path d="m9 12 2 2 4-5"/></svg></div>
+            <h3>Admin thật</h3><p>Admin duyệt, từ chối, xóa bài và quản lý user bằng quyền role trong database.</p>
+          </article>
+          <article class="feature reveal">
+            <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l3-3 4 4 5-8"/></svg></div>
+            <h3>Pulse thật</h3><p>Số liệu lấy từ user, bài đăng, status và lượt search thật.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <section class="section" id="solution">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>Solution</div>
-        <h2>Một nơi nhỏ hơn. Rõ hơn. Đúng người hơn.</h2>
-        <p>BARO không cố làm mọi thứ. BARO bắt đầu từ một cộng đồng đủ gần: sinh viên Việt tại Đại học Tịnh Nghi.</p>
-      </div>
-
-      <div class="story-panel">
-        <div class="story-copy reveal">
-          <h2>Mua bán quanh campus.</h2>
-          <p>Người mua tìm món cần thiết, xem giá, tình trạng và khu vực hẹn gặp. Người bán đăng bài ngắn gọn, chờ admin duyệt rồi xuất hiện công khai.</p>
-          <div class="hero-actions">
-            <a class="btn btn-dark" href="#marketplace">Xem marketplace</a>
-            <button class="btn btn-soft" data-open-post data-needs-auth>Đăng bán</button>
+    <section id="marketplace">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Live marketplace</div>
+            <h2 class="title">Những món đang được bán.</h2>
           </div>
-        </div>
-        <div class="story-visual reveal" aria-hidden="true">
-          <div class="campus-map">
-            <span class="map-pin pin-1"></span>
-            <span class="map-pin pin-2"></span>
-            <span class="map-pin pin-3"></span>
-          </div>
-          <div class="map-label label-1">Thư viện</div>
-          <div class="map-label label-2">FamilyMart</div>
-        </div>
-      </div>
-
-      <div class="feature-row">
-        <article class="feature-card reveal"><div class="feature-icon">🔎</div><div><h3>Search rõ ràng</h3><p>Tìm theo tên, mô tả, danh mục, khu vực hoặc người bán.</p></div></article>
-        <article class="feature-card reveal"><div class="feature-icon">🎛️</div><div><h3>Filter dễ dùng</h3><p>Lọc theo giá, tình trạng, danh mục và khu vực hẹn gặp.</p></div></article>
-        <article class="feature-card reveal"><div class="feature-icon">✅</div><div><h3>Admin duyệt bài</h3><p>Bài phù hợp mới hiện công khai, giúp cộng đồng sạch hơn.</p></div></article>
-        <article class="feature-card reveal"><div class="feature-icon">📊</div><div><h3>Pulse dashboard</h3><p>Theo dõi user, sản phẩm, bài chờ duyệt và món đã bán.</p></div></article>
-      </div>
-    </section>
-
-    <section class="section" id="marketplace">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>MVP Marketplace</div>
-        <h2>Không demo ảo. Bắt đầu từ dữ liệu thật.</h2>
-        <p>Bản này dùng localStorage: phù hợp để test concept, cho mentor/bạn bè xem, và lấy feedback trước khi nâng cấp lên Supabase/Firebase.</p>
-      </div>
-
-      <div class="market-shell reveal">
-        <div class="market-top">
-          <div class="market-title">
-            <h3>Marketplace</h3>
-            <p>Chỉ hiện bài đã được admin duyệt. Dữ liệu lưu trên trình duyệt hiện tại.</p>
-          </div>
-          <div class="hero-actions" style="margin-top:0">
-            <button class="btn btn-primary" data-open-post data-needs-auth>Đăng bán</button>
-            <button class="btn btn-ghost" data-my-listings data-auth-only>Tin của tôi</button>
-          </div>
+          <p class="sub">Chỉ bài đã được admin duyệt mới hiển thị công khai. Người bán có thể đánh dấu đã bán sau khi giao dịch xong.</p>
         </div>
 
-        <div class="filters" aria-label="Search and filters">
-          <input id="marketSearch" type="search" placeholder="Search sản phẩm, mô tả, người bán..." />
-          <select id="filterCategory">
-            <option value="all">Tất cả danh mục</option>
-            <option value="Sách cũ">Sách cũ</option>
-            <option value="Đồ học tập">Đồ học tập</option>
-            <option value="Đồ dorm">Đồ dorm</option>
-            <option value="Đồ chuyển nhà">Đồ chuyển nhà</option>
+        <div class="market-toolbar">
+          <input id="searchInput" placeholder="Tìm sách, nồi điện, đèn học..." />
+          <select id="categoryFilter">
+            <option value="">Tất cả danh mục</option>
+            <option>Sách cũ</option>
+            <option>Đồ học tập</option>
+            <option>Đồ dorm</option>
+            <option>Đồ chuyển nhà</option>
           </select>
-          <select id="filterPrice">
-            <option value="all">Tất cả giá</option>
+          <select id="priceFilter">
+            <option value="">Tất cả giá</option>
             <option value="under100">Dưới NT$100</option>
             <option value="100to300">NT$100–300</option>
             <option value="over300">Trên NT$300</option>
           </select>
-          <select id="filterCondition">
-            <option value="all">Tất cả tình trạng</option>
-            <option value="Mới">Mới</option>
-            <option value="Còn tốt">Còn tốt</option>
-            <option value="Đã dùng">Đã dùng</option>
+          <select id="conditionFilter">
+            <option value="">Tất cả tình trạng</option>
+            <option>Mới</option>
+            <option>Còn tốt</option>
+            <option>Đã dùng</option>
           </select>
-          <select id="filterPlace">
-            <option value="all">Tất cả khu vực</option>
-            <option value="Thư viện">Thư viện</option>
-            <option value="KTX">KTX</option>
-            <option value="Cổng trường">Cổng trường</option>
-            <option value="FamilyMart">FamilyMart</option>
-            <option value="Khu Shalu">Khu Shalu</option>
-          </select>
-          <select id="sortProducts">
-            <option value="newest">Mới nhất</option>
-            <option value="lowHigh">Giá thấp đến cao</option>
-            <option value="highLow">Giá cao đến thấp</option>
+          <select id="sortFilter">
+            <option value="new">Mới nhất</option>
+            <option value="low">Giá thấp đến cao</option>
+            <option value="high">Giá cao đến thấp</option>
           </select>
         </div>
 
-        <div class="product-grid" id="productGrid"></div>
+        <div id="marketGrid" class="listing-grid"></div>
       </div>
     </section>
 
-    <section class="section" id="pulse">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>BARO Pulse</div>
-        <h2>Founder cần thấy tín hiệu thật.</h2>
-        <p>Pulse giúp biết cộng đồng đang cần gì: danh mục hot, khu vực hẹn gặp phổ biến, từ khóa được tìm nhiều và số bài chờ duyệt.</p>
-      </div>
-
-      <div class="pulse-layout">
-        <div class="pulse-copy reveal">
-          <h2>Data-backed, not guesswork.</h2>
-          <p>BARO Pulse không dùng số đẹp cho vui. Tất cả chỉ số bên dưới được tính từ user, bài đăng và lượt search thật trong localStorage.</p>
-          <div class="hero-actions">
-            <a class="btn btn-dark" href="#admin">Mở admin view</a>
+    <section id="sell">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Post a listing</div>
+            <h2 class="title">Đăng bán trong 60 giây.</h2>
           </div>
+          <p class="sub">Sau khi gửi, bài sẽ ở trạng thái chờ duyệt. Admin kiểm tra ảnh, giá, mô tả, khu vực hẹn gặp rồi mới public.</p>
         </div>
-        <div class="dashboard reveal">
-          <div class="dashboard-head">
-            <h3>BARO Pulse</h3>
-            <span class="live-badge">Local live data</span>
-          </div>
-          <div class="metric-grid">
-            <div class="metric"><span>Tổng user</span><b id="metricUsers">0</b></div>
-            <div class="metric"><span>Tổng admin</span><b id="metricAdmins">0</b></div>
-            <div class="metric"><span>Tổng sản phẩm</span><b id="metricProducts">0</b></div>
-            <div class="metric"><span>Bài chờ duyệt</span><b id="metricPending">0</b></div>
-            <div class="metric"><span>Bài đã duyệt</span><b id="metricApproved">0</b></div>
-            <div class="metric"><span>Bài đã bán</span><b id="metricSold">0</b></div>
-          </div>
-          <div class="insight-box">
-            <h4>Insight tự động</h4>
-            <div class="insight-line"><span>Danh mục hot nhất</span><b id="hotCategory">Chưa có dữ liệu</b></div>
-            <div class="insight-line"><span>Khu vực phổ biến nhất</span><b id="hotPlace">Chưa có dữ liệu</b></div>
-            <div class="insight-line"><span>Từ khóa tìm nhiều nhất</span><b id="hotKeyword">Chưa có dữ liệu</b></div>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <section class="section section-tight" id="flow">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>User Flow</div>
-        <h2>Ba luồng. Một trải nghiệm sạch.</h2>
-      </div>
-      <div class="flow">
-        <article class="flow-card reveal"><span class="flow-number">01 · Đăng bán</span><h3>User gửi bài.</h3><p>Điền sản phẩm, giá, tình trạng, khu vực gặp và ảnh. Bài chuyển sang trạng thái chờ duyệt.</p></article>
-        <article class="flow-card reveal"><span class="flow-number">02 · Admin duyệt</span><h3>Chỉ bài rõ ràng được hiện.</h3><p>Admin duyệt, từ chối hoặc xóa bài. Nội dung không phù hợp không vào marketplace.</p></article>
-        <article class="flow-card reveal"><span class="flow-number">03 · Giao dịch</span><h3>Gặp quanh trường.</h3><p>Người mua liên hệ người bán, hẹn gặp ở thư viện, KTX, cổng trường hoặc FamilyMart.</p></article>
-      </div>
-    </section>
-
-    <section class="section" id="founder">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>Founder Story</div>
-        <h2>Xây từ trải nghiệm thật.</h2>
-        <p>BARO bắt đầu từ một pain point nhỏ nhưng rất đời thường của sinh viên quốc tế: đồ còn tốt nhưng không biết trao lại cho ai.</p>
-      </div>
-
-      <div class="founder-card reveal">
-        <div class="founder-visual">
-          <div class="avatar-3d" aria-hidden="true">
-            <div class="avatar-card">
-              <div class="avatar-face">B</div>
-              <h3>Baro</h3>
-              <p>Cựu sinh viên Đại học Tịnh Nghi, xây BARO cho cộng đồng sinh viên Việt tại Đài Loan.</p>
+        <div id="sellAuthNotice" class="notice auth-note">Bạn cần đăng nhập để đăng bán.</div>
+        <form id="listingForm" class="panel auth-only" style="padding:24px">
+          <div class="form-grid">
+            <div>
+              <label>Tên món đồ</label>
+              <input id="titleInput" required maxlength="90" placeholder="VD: Sách tiếng Trung A Course in Contemporary Chinese" />
+            </div>
+            <div>
+              <label>Giá NT$</label>
+              <input id="priceInput" required min="0" type="number" placeholder="VD: 180" />
+            </div>
+            <div>
+              <label>Danh mục</label>
+              <select id="categoryInput" required>
+                <option value="">Chọn danh mục</option>
+                <option>Sách cũ</option>
+                <option>Đồ học tập</option>
+                <option>Đồ dorm</option>
+                <option>Đồ chuyển nhà</option>
+              </select>
+            </div>
+            <div>
+              <label>Tình trạng</label>
+              <select id="conditionInput" required>
+                <option value="">Chọn tình trạng</option>
+                <option>Mới</option>
+                <option>Còn tốt</option>
+                <option>Đã dùng</option>
+              </select>
+            </div>
+            <div>
+              <label>Khu vực hẹn gặp</label>
+              <select id="areaInput" required>
+                <option value="">Chọn khu vực</option>
+                <option>Thư viện</option>
+                <option>KTX</option>
+                <option>Cổng trường</option>
+                <option>FamilyMart</option>
+                <option>Khu Shalu</option>
+              </select>
+            </div>
+            <div>
+              <label>Liên hệ người bán</label>
+              <input id="contactInput" required maxlength="80" placeholder="LINE ID / Facebook / Instagram" />
+            </div>
+            <div class="full">
+              <label>Ảnh thật của món đồ</label>
+              <input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp" />
+            </div>
+            <div class="full">
+              <label>Mô tả ngắn</label>
+              <textarea id="descInput" required maxlength="500" placeholder="Mô tả tình trạng, dùng bao lâu, có lỗi gì không..."></textarea>
             </div>
           </div>
-        </div>
-        <div class="founder-copy">
-          <h2>Không chỉ bán đồ cũ.</h2>
-          <p>BARO là một nền tảng giúp sinh viên trao lại những món đồ còn giá trị cho người cần hơn. Người bán lấy lại một phần chi phí. Người mua tiết kiệm hơn. Cộng đồng giảm lãng phí hơn.</p>
-          <p>Mục tiêu đầu tiên: test tại Providence University với 30–50 user thật, 20–30 bài đăng thật và 10–20 phản hồi đầu tiên.</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-tight" id="launch">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>Launch Plan</div>
-        <h2>Từ MVP đến cộng đồng thật.</h2>
-      </div>
-      <div class="launch-grid">
-        <article class="launch-card reveal"><small>Phase 1</small><h3>Chuẩn bị nền tảng</h3><p>Test login, đăng bài, admin duyệt, responsive và nội dung tiếng Việt.</p></article>
-        <article class="launch-card reveal"><small>Phase 2</small><h3>Khảo sát cộng đồng</h3><p>Lấy 30–50 phản hồi để xác nhận nhu cầu thật trước khi public.</p></article>
-        <article class="launch-card reveal"><small>Phase 3</small><h3>Soft launch</h3><p>Mời 20–50 user đầu tiên, cho đăng bài thật và lấy feedback.</p></article>
-        <article class="launch-card reveal"><small>Phase 4</small><h3>Public launch</h3><p>Campaign “Trao lại cho khóa sau” trên Facebook, LINE, Threads, TikTok.</p></article>
-      </div>
-    </section>
-
-    <section class="section" id="admin">
-      <div class="mega-copy reveal">
-        <div class="eyebrow"><span class="dot"></span>Admin Dashboard</div>
-        <h2>Quản lý cộng đồng sạch hơn.</h2>
-        <p>Admin có thể duyệt bài, từ chối bài, xóa bài, quản lý user và nâng quyền admin cho người hỗ trợ.</p>
-      </div>
-
-      <div class="admin-panel reveal" id="adminPanel">
-        <div class="admin-tabs">
-          <button class="btn btn-dark btn-small" data-admin-tab="pending">Bài chờ duyệt</button>
-          <button class="btn btn-ghost btn-small" data-admin-tab="all">Tất cả bài đăng</button>
-          <button class="btn btn-ghost btn-small" data-admin-tab="users">User</button>
-        </div>
-        <div class="admin-view is-visible" id="adminPending"><div class="admin-list" id="pendingList"></div></div>
-        <div class="admin-view" id="adminAll"><div class="admin-list" id="allList"></div></div>
-        <div class="admin-view" id="adminUsers"><div class="admin-list" id="userList"></div></div>
-      </div>
-
-      <div class="empty-state reveal" id="adminLocked">
-        <div>
-          <h3>Admin view đang khóa.</h3>
-          <p>Đăng nhập bằng tài khoản admin để duyệt bài. Trong MVP này, tài khoản đầu tiên đăng ký sẽ tự động là admin.</p>
-          <div class="hero-actions" style="justify-content:center"><button class="btn btn-primary" data-auth-open>Đăng nhập / Đăng ký</button></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="cta-band">
-      <div class="cta-card reveal">
-        <div class="cta-content">
-          <h2>Trao lại cho khóa sau.</h2>
-          <p>Đăng món đồ còn dùng tốt. Giúp một bạn sinh viên khác tiết kiệm hơn khi bắt đầu cuộc sống ở Tịnh Nghi.</p>
-          <div class="cta-actions">
-            <button class="btn btn-primary" data-open-post data-needs-auth>Đăng bán ngay</button>
-            <a class="btn btn-ghost" style="color:#fff;background:rgba(255,255,255,.12)" href="#marketplace">Xem marketplace</a>
+          <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+            <button class="btn" type="submit" id="submitListingBtn">Gửi bài chờ duyệt</button>
+            <span class="pill">Bài chưa duyệt sẽ không hiện công khai</span>
           </div>
+          <div id="listingMsg" class="msg"></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="my">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">My listings</div>
+            <h2 class="title">Tin của tôi.</h2>
+          </div>
+          <p class="sub">Theo dõi bài chờ duyệt, bài đã được duyệt, bài bị từ chối và đánh dấu đã bán.</p>
+        </div>
+        <div id="myAuthNotice" class="notice">Bạn cần đăng nhập để xem tin của mình.</div>
+        <div id="myGrid" class="listing-grid auth-only"></div>
+      </div>
+    </section>
+
+    <section id="admin" class="admin-only">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Admin dashboard</div>
+            <h2 class="title">BARO Pulse.</h2>
+          </div>
+          <p class="sub">Dashboard thật cho founder/admin: duyệt bài, theo dõi số liệu, xem user và vận hành cộng đồng.</p>
+        </div>
+
+        <div class="pulse-grid">
+          <div class="stat"><span>Tổng user</span><strong id="statUsers">0</strong></div>
+          <div class="stat"><span>Tổng sản phẩm</span><strong id="statListings">0</strong></div>
+          <div class="stat"><span>Chờ duyệt</span><strong id="statPending">0</strong></div>
+          <div class="stat"><span>Đã bán</span><strong id="statSold">0</strong></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel" style="padding:20px">
+            <h3 style="margin:0 0 14px;font-size:26px;letter-spacing:-.04em">Bài chờ duyệt</h3>
+            <div id="pendingTable" class="table-wrap"></div>
+          </div>
+          <div class="panel" style="padding:20px">
+            <h3 style="margin:0 0 14px;font-size:26px;letter-spacing:-.04em">User</h3>
+            <div id="usersTable" class="table-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="trust">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Safety rules</div>
+            <h2 class="title">Giao dịch nhỏ, nhưng phải rõ ràng.</h2>
+          </div>
+          <p class="sub">BARO không giữ tiền. Website giúp kết nối người mua và người bán. Hai bên nên hẹn ở nơi công cộng quanh trường.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature reveal"><div class="icon"><svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M12 4v16"/></svg></div><h3>Ảnh thật</h3><p>Khuyến khích dùng ảnh thật của món đồ, không dùng ảnh mạng nếu có thể.</p></article>
+          <article class="feature reveal"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7H14a3.5 3.5 0 0 1 0 7H6"/></svg></div><h3>Giá rõ</h3><p>Ghi giá cụ thể bằng NT$, tránh “inbox báo giá”.</p></article>
+          <article class="feature reveal"><div class="icon"><svg viewBox="0 0 24 24"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div><h3>Gặp nơi công cộng</h3><p>Thư viện, cổng trường, KTX hoặc cửa hàng tiện lợi quanh campus.</p></article>
+          <article class="feature reveal"><div class="icon"><svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg></div><h3>Báo admin</h3><p>Nếu bài sai mô tả hoặc spam, user có thể liên hệ admin để xử lý.</p></article>
         </div>
       </div>
     </section>
   </main>
 
-  <footer>
-    <div class="footer-inner">
-      <span>© <span id="year"></span> BARO. Built for Vietnamese students at Providence University.</span>
-      <span>Friendly · Practical · Trustworthy · Student-first · Sustainable</span>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div><strong>BARO</strong><br>Đồ cũ sinh viên, trao lại cho người cần.</div>
+      <div>Built for Vietnamese students at Providence University.</div>
     </div>
   </footer>
 
-  <div class="modal-backdrop" id="authModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
-      <div class="modal-head">
-        <h3 id="authTitle">Tài khoản BARO</h3>
-        <button class="close-btn" data-close-modal="authModal" aria-label="Close">×</button>
+  <div id="authModal" class="modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-top">
+        <h3 id="authTitle">Đăng nhập</h3>
+        <button class="x" id="closeAuth">×</button>
       </div>
-      <div class="modal-body">
-        <div class="auth-tabs">
-          <button class="btn btn-dark btn-small" id="showLogin">Đăng nhập</button>
-          <button class="btn btn-ghost btn-small" id="showRegister">Đăng ký</button>
+      <div class="tabs">
+        <button class="tab active" id="loginTab">Đăng nhập</button>
+        <button class="tab" id="signupTab">Đăng ký</button>
+      </div>
+      <form id="authForm">
+        <div id="nameField" style="display:none;margin-bottom:12px">
+          <label>Tên hiển thị</label>
+          <input id="fullNameInput" placeholder="VD: Baro Nguyen" />
         </div>
-
-        <form class="form" id="loginForm">
-          <input type="email" id="loginEmail" placeholder="Email" required />
-          <input type="password" id="loginPassword" placeholder="Mật khẩu" required />
-          <button class="btn btn-primary" type="submit">Đăng nhập</button>
-          <small>MVP dùng localStorage, không phải authentication thật. Không dùng mật khẩu quan trọng.</small>
-        </form>
-
-        <form class="form hidden" id="registerForm">
-          <input type="text" id="registerName" placeholder="Tên hiển thị" required />
-          <input type="email" id="registerEmail" placeholder="Email" required />
-          <input type="password" id="registerPassword" placeholder="Mật khẩu" required minlength="4" />
-          <input type="text" id="registerContact" placeholder="Liên hệ: LINE / Facebook / Email" required />
-          <button class="btn btn-primary" type="submit">Tạo tài khoản</button>
-          <small>Tài khoản đầu tiên đăng ký trong trình duyệt này sẽ là admin để bạn có thể test duyệt bài.</small>
-        </form>
-      </div>
+        <div style="margin-bottom:12px">
+          <label>Email</label>
+          <input id="emailInput" type="email" required placeholder="you@email.com" />
+        </div>
+        <div style="margin-bottom:12px">
+          <label>Mật khẩu</label>
+          <input id="passwordInput" type="password" required minlength="6" placeholder="Tối thiểu 6 ký tự" />
+        </div>
+        <div id="lineField" style="display:none;margin-bottom:12px">
+          <label>LINE ID / liên hệ</label>
+          <input id="lineInput" placeholder="Tùy chọn" />
+        </div>
+        <button class="btn" id="authSubmit" type="submit" style="width:100%">Đăng nhập</button>
+        <div id="authMsg" class="msg"></div>
+      </form>
     </div>
   </div>
-
-  <div class="modal-backdrop" id="postModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="postTitle">
-      <div class="modal-head">
-        <h3 id="postTitle">Đăng bán đồ cũ</h3>
-        <button class="close-btn" data-close-modal="postModal" aria-label="Close">×</button>
-      </div>
-      <div class="modal-body">
-        <form class="form" id="postForm">
-          <div class="form-row">
-            <input type="text" id="postName" placeholder="Tên sản phẩm" required maxlength="70" />
-            <input type="number" id="postPrice" placeholder="Giá NT$" min="0" required />
-          </div>
-          <div class="form-row">
-            <select id="postCategory" required>
-              <option value="">Chọn danh mục</option>
-              <option>Sách cũ</option>
-              <option>Đồ học tập</option>
-              <option>Đồ dorm</option>
-              <option>Đồ chuyển nhà</option>
-            </select>
-            <select id="postCondition" required>
-              <option value="">Tình trạng</option>
-              <option>Mới</option>
-              <option>Còn tốt</option>
-              <option>Đã dùng</option>
-            </select>
-          </div>
-          <select id="postPlace" required>
-            <option value="">Khu vực hẹn gặp</option>
-            <option>Thư viện</option>
-            <option>KTX</option>
-            <option>Cổng trường</option>
-            <option>FamilyMart</option>
-            <option>Khu Shalu</option>
-          </select>
-          <textarea id="postDesc" placeholder="Mô tả ngắn: tình trạng, lý do bán, lưu ý..." required maxlength="240"></textarea>
-          <input type="file" id="postImage" accept="image/*" />
-          <small>Bài đăng sẽ ở trạng thái “Chờ duyệt”. Admin duyệt xong mới hiện công khai ở marketplace.</small>
-          <button class="btn btn-primary" type="submit">Gửi bài chờ duyệt</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" id="myModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="myTitle">
-      <div class="modal-head">
-        <h3 id="myTitle">Tin của tôi</h3>
-        <button class="close-btn" data-close-modal="myModal" aria-label="Close">×</button>
-      </div>
-      <div class="modal-body">
-        <div class="admin-list" id="myListings"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    const STORAGE_KEY = 'baro_mvp_v3_state';
-    const $ = (selector, root = document) => root.querySelector(selector);
-    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+    // STEP 1: Tạo Supabase project, chạy file baro_supabase_schema.sql.
+    // STEP 2: Vào Supabase > Project Settings > API rồi paste URL và anon public key vào đây.
+    // Lưu ý: anon key được phép public nếu RLS policies đã bật. Không bao giờ paste service_role key vào HTML.
+    const SUPABASE_URL = 'PASTE_SUPABASE_URL_HERE';
+    const SUPABASE_ANON_KEY = 'PASTE_SUPABASE_ANON_KEY_HERE';
 
-    const defaultState = {
-      users: [],
-      sessionEmail: null,
-      products: [],
-      searches: []
-    };
+    const CATEGORIES = ['Sách cũ','Đồ học tập','Đồ dorm','Đồ chuyển nhà'];
+    const STATUS_LABEL = { pending:'Chờ duyệt', approved:'Đã duyệt', rejected:'Từ chối', sold:'Đã bán' };
+    const configured = SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('PASTE_') && SUPABASE_ANON_KEY.length > 40 && !SUPABASE_ANON_KEY.includes('PASTE_');
+    const db = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-    function getState() {
-      try {
-        return { ...defaultState, ...(JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}) };
-      } catch (error) {
-        return { ...defaultState };
+    let currentUser = null;
+    let currentProfile = null;
+    let authMode = 'login';
+    let marketplaceCache = [];
+    const $ = (id) => document.getElementById(id);
+
+    const money = (n) => `NT$${Number(n || 0).toLocaleString('en-US')}`;
+    const escapeHTML = (value='') => String(value).replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    const debounce = (fn, wait=350) => { let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args),wait); }; };
+    const slug = (s='file') => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,50) || 'file';
+    const isAdmin = () => currentProfile?.role === 'admin';
+
+    function setMsg(el, text, danger=false){
+      if (!el) return;
+      el.textContent = text || '';
+      el.style.color = danger ? '#ffd0cc' : '#c4cad4';
+    }
+
+    function showSetupIfNeeded(){
+      if (!configured) {
+        $('setupBanner').style.display = 'block';
+        document.querySelectorAll('button,input,select,textarea').forEach(el => {
+          if (!['closeAuth','menuBtn'].includes(el.id)) el.disabled = true;
+        });
+        $('authBtn').textContent = 'Cần kết nối DB';
+        renderEmpty($('marketGrid'), 'Chưa kết nối database', 'Hãy tạo Supabase project và paste URL/anon key vào index.html.');
       }
     }
 
-    function setState(state) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      renderAll();
+    function openAuth(mode='login'){
+      if (!configured) return;
+      authMode = mode;
+      $('authModal').classList.add('show');
+      document.body.classList.add('lock');
+      updateAuthTabs();
     }
 
-    function currentUser() {
-      const state = getState();
-      return state.users.find(user => user.email === state.sessionEmail) || null;
+    function closeAuth(){
+      $('authModal').classList.remove('show');
+      document.body.classList.remove('lock');
+      setMsg($('authMsg'), '');
     }
 
-    function isAdmin() {
-      const user = currentUser();
-      return Boolean(user && user.role === 'admin');
+    function updateAuthTabs(){
+      const signup = authMode === 'signup';
+      $('loginTab').classList.toggle('active', !signup);
+      $('signupTab').classList.toggle('active', signup);
+      $('authTitle').textContent = signup ? 'Tạo tài khoản BARO' : 'Đăng nhập';
+      $('authSubmit').textContent = signup ? 'Đăng ký' : 'Đăng nhập';
+      $('nameField').style.display = signup ? 'block' : 'none';
+      $('lineField').style.display = signup ? 'block' : 'none';
     }
 
-    function escapeHtml(value = '') {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
+    async function handleAuthSubmit(e){
+      e.preventDefault();
+      setMsg($('authMsg'),'');
+      if (!configured) return;
+      const email = $('emailInput').value.trim();
+      const password = $('passwordInput').value;
+      const fullName = $('fullNameInput').value.trim();
+      const line = $('lineInput').value.trim();
 
-    function formatPrice(value) {
-      const number = Number(value || 0);
-      return 'NT$' + number.toLocaleString('en-US');
-    }
-
-    function statusLabel(status) {
-      const labels = {
-        pending: 'Chờ duyệt',
-        approved: 'Đã duyệt',
-        rejected: 'Từ chối',
-        sold: 'Đã bán'
-      };
-      return labels[status] || status;
-    }
-
-    function imageMarkup(product, className = '') {
-      if (product.image) return `<img src="${product.image}" alt="${escapeHtml(product.title)}" />`;
-      const icon = product.category === 'Sách cũ' ? '📚' : product.category === 'Đồ học tập' ? '✏️' : product.category === 'Đồ dorm' ? '💡' : '📦';
-      return `<span class="${className}">${icon}</span>`;
-    }
-
-    function toast(message) {
-      const el = $('#toast');
-      el.textContent = message;
-      el.classList.add('is-visible');
-      clearTimeout(window.__baroToast);
-      window.__baroToast = setTimeout(() => el.classList.remove('is-visible'), 2600);
-    }
-
-    function openModal(id) {
-      const modal = $('#' + id);
-      if (!modal) return;
-      modal.classList.add('is-visible');
-      modal.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeModal(id) {
-      const modal = $('#' + id);
-      if (!modal) return;
-      modal.classList.remove('is-visible');
-      modal.setAttribute('aria-hidden', 'true');
-    }
-
-    function requireAuth(action) {
-      if (!currentUser()) {
-        openModal('authModal');
-        toast('Bạn cần đăng nhập trước.');
-        return false;
-      }
-      if (typeof action === 'function') action();
-      return true;
-    }
-
-    function productMatches(product, filters) {
-      const haystack = [product.title, product.description, product.category, product.place, product.sellerName, product.sellerEmail].join(' ').toLowerCase();
-      const keywordOk = !filters.q || haystack.includes(filters.q.toLowerCase());
-      const categoryOk = filters.category === 'all' || product.category === filters.category;
-      const conditionOk = filters.condition === 'all' || product.condition === filters.condition;
-      const placeOk = filters.place === 'all' || product.place === filters.place;
-      const price = Number(product.price);
-      const priceOk = filters.price === 'all'
-        || (filters.price === 'under100' && price < 100)
-        || (filters.price === '100to300' && price >= 100 && price <= 300)
-        || (filters.price === 'over300' && price > 300);
-      return keywordOk && categoryOk && conditionOk && placeOk && priceOk;
-    }
-
-    function getMarketFilters() {
-      return {
-        q: $('#marketSearch')?.value.trim() || '',
-        category: $('#filterCategory')?.value || 'all',
-        price: $('#filterPrice')?.value || 'all',
-        condition: $('#filterCondition')?.value || 'all',
-        place: $('#filterPlace')?.value || 'all',
-        sort: $('#sortProducts')?.value || 'newest'
-      };
-    }
-
-    function renderMarketplace() {
-      const state = getState();
-      const grid = $('#productGrid');
-      if (!grid) return;
-      const filters = getMarketFilters();
-      let products = state.products
-        .filter(product => product.status === 'approved')
-        .filter(product => productMatches(product, filters));
-
-      products.sort((a, b) => {
-        if (filters.sort === 'lowHigh') return Number(a.price) - Number(b.price);
-        if (filters.sort === 'highLow') return Number(b.price) - Number(a.price);
-        return Number(b.createdAt) - Number(a.createdAt);
-      });
-
-      if (!products.length) {
-        grid.innerHTML = `
-          <div class="empty-state">
-            <div>
-              <h3>Marketplace đang chờ món đầu tiên.</h3>
-              <p>BARO bắt đầu từ 0 dữ liệu để giữ đúng tinh thần MVP: bài nào xuất hiện ở đây đều là bài thật đã được admin duyệt.</p>
-              <div class="hero-actions" style="justify-content:center"><button class="btn btn-primary" data-open-post data-needs-auth>Đăng món đầu tiên</button></div>
-            </div>
-          </div>
-        `;
-        bindDynamicActions();
-        return;
-      }
-
-      grid.innerHTML = products.map(product => `
-        <article class="product-card">
-          <div class="product-image">
-            <span class="status-pill">${statusLabel(product.status)}</span>
-            ${imageMarkup(product)}
-          </div>
-          <div class="product-body">
-            <h4>${escapeHtml(product.title)}</h4>
-            <div class="product-meta">
-              <span class="tag">${escapeHtml(product.category)}</span>
-              <span class="tag">${escapeHtml(product.condition)}</span>
-              <span class="tag">${escapeHtml(product.place)}</span>
-            </div>
-            <div class="price">${formatPrice(product.price)}</div>
-            <p class="product-desc">${escapeHtml(product.description)}</p>
-            <div class="product-actions">
-              <button class="btn btn-dark btn-small" data-contact-seller="${product.id}">Liên hệ người bán</button>
-              ${currentUser()?.email === product.sellerEmail ? `<button class="btn btn-soft btn-small" data-mark-sold="${product.id}">Đã bán</button>` : ''}
-            </div>
-          </div>
-        </article>
-      `).join('');
-      bindDynamicActions();
-    }
-
-    function renderMetrics() {
-      const state = getState();
-      const users = state.users || [];
-      const products = state.products || [];
-      const counts = {
-        users: users.length,
-        admins: users.filter(user => user.role === 'admin').length,
-        products: products.length,
-        pending: products.filter(product => product.status === 'pending').length,
-        approved: products.filter(product => product.status === 'approved').length,
-        sold: products.filter(product => product.status === 'sold').length
-      };
-
-      const mapping = {
-        proofUsers: counts.users,
-        proofProducts: counts.products,
-        metricUsers: counts.users,
-        metricAdmins: counts.admins,
-        metricProducts: counts.products,
-        metricPending: counts.pending,
-        metricApproved: counts.approved,
-        metricSold: counts.sold
-      };
-      Object.entries(mapping).forEach(([id, value]) => {
-        const el = $('#' + id);
-        if (el) el.textContent = value;
-      });
-
-      $('#hotCategory').textContent = topValue(products, 'category') || 'Chưa có dữ liệu';
-      $('#hotPlace').textContent = topValue(products, 'place') || 'Chưa có dữ liệu';
-      $('#hotKeyword').textContent = topKeyword(state.searches || []) || 'Chưa có dữ liệu';
-    }
-
-    function topValue(items, key) {
-      const counts = {};
-      items.forEach(item => {
-        if (!item[key]) return;
-        counts[item[key]] = (counts[item[key]] || 0) + 1;
-      });
-      return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    }
-
-    function topKeyword(searches) {
-      const counts = {};
-      searches.map(search => String(search || '').trim().toLowerCase()).filter(Boolean).forEach(search => {
-        counts[search] = (counts[search] || 0) + 1;
-      });
-      return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    }
-
-    function renderAuthArea() {
-      const user = currentUser();
-      const navActions = $('#navActions');
-      if (!navActions) return;
-
-      if (!user) {
-        navActions.innerHTML = `
-          <button class="btn btn-ghost btn-small" data-auth-open>Đăng nhập</button>
-          <button class="btn btn-primary btn-small" data-open-post data-auth-only>Đăng bán</button>
-        `;
-      } else {
-        navActions.innerHTML = `
-          <span class="tag">${escapeHtml(user.name)} · ${user.role === 'admin' ? 'Admin' : 'User'}</span>
-          <button class="btn btn-primary btn-small" data-open-post>Đăng bán</button>
-          <button class="btn btn-ghost btn-small" id="logoutBtn">Đăng xuất</button>
-        `;
-      }
-
-      $$('[data-admin-only]').forEach(el => el.style.display = isAdmin() ? '' : 'none');
-      $$('[data-auth-only]').forEach(el => el.style.display = user ? '' : 'none');
-      bindDynamicActions();
-    }
-
-    function renderAdmin() {
-      const panel = $('#adminPanel');
-      const locked = $('#adminLocked');
-      if (!panel || !locked) return;
-      if (!isAdmin()) {
-        panel.classList.remove('is-visible');
-        locked.classList.remove('hidden');
-        return;
-      }
-      panel.classList.add('is-visible');
-      locked.classList.add('hidden');
-
-      const state = getState();
-      renderAdminList('#pendingList', state.products.filter(product => product.status === 'pending'), 'pending');
-      renderAdminList('#allList', state.products, 'all');
-      renderUserList(state.users);
-    }
-
-    function renderAdminList(selector, products, mode) {
-      const list = $(selector);
-      if (!list) return;
-      if (!products.length) {
-        list.innerHTML = `<div class="empty-state"><div><h3>Không có dữ liệu.</h3><p>${mode === 'pending' ? 'Hiện chưa có bài nào đang chờ duyệt.' : 'Chưa có bài đăng nào trong hệ thống.'}</p></div></div>`;
-        return;
-      }
-
-      list.innerHTML = products.map(product => `
-        <article class="admin-item">
-          <div class="admin-thumb">${imageMarkup(product)}</div>
-          <div class="admin-info">
-            <h4>${escapeHtml(product.title)} · ${formatPrice(product.price)}</h4>
-            <p>${escapeHtml(product.category)} · ${escapeHtml(product.condition)} · ${escapeHtml(product.place)} · ${statusLabel(product.status)}</p>
-            <p>${escapeHtml(product.description)}</p>
-            <p>Người bán: ${escapeHtml(product.sellerName)} (${escapeHtml(product.sellerEmail)})</p>
-          </div>
-          <div class="admin-actions">
-            ${product.status !== 'approved' ? `<button class="btn btn-primary btn-small" data-approve="${product.id}">Duyệt</button>` : ''}
-            ${product.status !== 'rejected' ? `<button class="btn btn-ghost btn-small" data-reject="${product.id}">Từ chối</button>` : ''}
-            <button class="btn btn-danger btn-small" data-delete-product="${product.id}">Xóa</button>
-          </div>
-        </article>
-      `).join('');
-      bindDynamicActions();
-    }
-
-    function renderUserList(users) {
-      const list = $('#userList');
-      if (!list) return;
-      if (!users.length) {
-        list.innerHTML = `<div class="empty-state"><div><h3>Chưa có user.</h3><p>Tài khoản đầu tiên đăng ký sẽ là admin.</p></div></div>`;
-        return;
-      }
-      list.innerHTML = users.map(user => `
-        <article class="admin-item user-row">
-          <div class="admin-info">
-            <h4>${escapeHtml(user.name)} · ${escapeHtml(user.role)}</h4>
-            <p>${escapeHtml(user.email)} · ${escapeHtml(user.contact || 'Chưa có liên hệ')}</p>
-          </div>
-          <div class="admin-actions">
-            ${user.role !== 'admin' ? `<button class="btn btn-primary btn-small" data-promote-user="${user.email}">Chuyển admin</button>` : ''}
-            ${user.email !== currentUser()?.email ? `<button class="btn btn-danger btn-small" data-delete-user="${user.email}">Xóa user</button>` : ''}
-          </div>
-        </article>
-      `).join('');
-      bindDynamicActions();
-    }
-
-    function renderMyListings() {
-      const user = currentUser();
-      const list = $('#myListings');
-      if (!user || !list) return;
-      const mine = getState().products.filter(product => product.sellerEmail === user.email);
-      if (!mine.length) {
-        list.innerHTML = `<div class="empty-state"><div><h3>Bạn chưa đăng món nào.</h3><p>Đăng món đầu tiên để admin duyệt và hiển thị trên marketplace.</p><div class="hero-actions" style="justify-content:center"><button class="btn btn-primary" data-open-post>Đăng bán</button></div></div></div>`;
-        bindDynamicActions();
-        return;
-      }
-      list.innerHTML = mine.map(product => `
-        <article class="admin-item">
-          <div class="admin-thumb">${imageMarkup(product)}</div>
-          <div class="admin-info">
-            <h4>${escapeHtml(product.title)} · ${formatPrice(product.price)}</h4>
-            <p>${escapeHtml(product.category)} · ${escapeHtml(product.place)} · ${statusLabel(product.status)}</p>
-            <p>${escapeHtml(product.description)}</p>
-          </div>
-          <div class="admin-actions">
-            ${product.status !== 'sold' ? `<button class="btn btn-soft btn-small" data-mark-sold="${product.id}">Đánh dấu đã bán</button>` : ''}
-            <button class="btn btn-danger btn-small" data-delete-product="${product.id}">Xóa</button>
-          </div>
-        </article>
-      `).join('');
-      bindDynamicActions();
-    }
-
-    function renderAll() {
-      renderMetrics();
-      renderMarketplace();
-      renderAuthArea();
-      renderAdmin();
-      renderMyListings();
-      $('#year').textContent = new Date().getFullYear();
-    }
-
-    function updateProduct(id, updates) {
-      const state = getState();
-      state.products = state.products.map(product => product.id === id ? { ...product, ...updates } : product);
-      setState(state);
-    }
-
-    function deleteProduct(id) {
-      const state = getState();
-      const product = state.products.find(item => item.id === id);
-      if (!product) return;
-      if (!isAdmin() && product.sellerEmail !== currentUser()?.email) {
-        toast('Bạn không có quyền xóa bài này.');
-        return;
-      }
-      state.products = state.products.filter(item => item.id !== id);
-      setState(state);
-      toast('Đã xóa bài đăng.');
-    }
-
-    function bindDynamicActions() {
-      $$('[data-auth-open]').forEach(btn => btn.onclick = () => openModal('authModal'));
-      $$('[data-open-post]').forEach(btn => btn.onclick = () => requireAuth(() => openModal('postModal')));
-      $$('[data-my-listings]').forEach(btn => btn.onclick = () => requireAuth(() => { renderMyListings(); openModal('myModal'); }));
-
-      const logout = $('#logoutBtn');
-      if (logout) logout.onclick = () => {
-        const state = getState();
-        state.sessionEmail = null;
-        setState(state);
-        toast('Đã đăng xuất.');
-      };
-
-      $$('[data-contact-seller]').forEach(btn => btn.onclick = () => {
-        const id = btn.getAttribute('data-contact-seller');
-        const product = getState().products.find(item => item.id === id);
-        if (!product) return;
-        toast(`Liên hệ ${product.sellerName}: ${product.sellerContact || product.sellerEmail}`);
-      });
-
-      $$('[data-mark-sold]').forEach(btn => btn.onclick = () => {
-        const id = btn.getAttribute('data-mark-sold');
-        const product = getState().products.find(item => item.id === id);
-        if (!product) return;
-        if (!isAdmin() && product.sellerEmail !== currentUser()?.email) return toast('Bạn không có quyền cập nhật bài này.');
-        updateProduct(id, { status: 'sold', soldAt: Date.now() });
-        toast('Đã đánh dấu sản phẩm là đã bán.');
-      });
-
-      $$('[data-approve]').forEach(btn => btn.onclick = () => { updateProduct(btn.getAttribute('data-approve'), { status: 'approved', approvedAt: Date.now() }); toast('Đã duyệt bài.'); });
-      $$('[data-reject]').forEach(btn => btn.onclick = () => { updateProduct(btn.getAttribute('data-reject'), { status: 'rejected', rejectedAt: Date.now() }); toast('Đã từ chối bài.'); });
-      $$('[data-delete-product]').forEach(btn => btn.onclick = () => deleteProduct(btn.getAttribute('data-delete-product')));
-
-      $$('[data-promote-user]').forEach(btn => btn.onclick = () => {
-        const email = btn.getAttribute('data-promote-user');
-        const state = getState();
-        state.users = state.users.map(user => user.email === email ? { ...user, role: 'admin' } : user);
-        setState(state);
-        toast('Đã chuyển user thành admin.');
-      });
-
-      $$('[data-delete-user]').forEach(btn => btn.onclick = () => {
-        const email = btn.getAttribute('data-delete-user');
-        const state = getState();
-        state.users = state.users.filter(user => user.email !== email);
-        state.products = state.products.filter(product => product.sellerEmail !== email);
-        if (state.sessionEmail === email) state.sessionEmail = null;
-        setState(state);
-        toast('Đã xóa user và bài đăng liên quan.');
-      });
-    }
-
-    function setupForms() {
-      $('#showLogin').addEventListener('click', () => {
-        $('#loginForm').classList.remove('hidden');
-        $('#registerForm').classList.add('hidden');
-        $('#showLogin').className = 'btn btn-dark btn-small';
-        $('#showRegister').className = 'btn btn-ghost btn-small';
-      });
-      $('#showRegister').addEventListener('click', () => {
-        $('#registerForm').classList.remove('hidden');
-        $('#loginForm').classList.add('hidden');
-        $('#showRegister').className = 'btn btn-dark btn-small';
-        $('#showLogin').className = 'btn btn-ghost btn-small';
-      });
-
-      $('#registerForm').addEventListener('submit', event => {
-        event.preventDefault();
-        const state = getState();
-        const email = $('#registerEmail').value.trim().toLowerCase();
-        if (state.users.some(user => user.email === email)) return toast('Email này đã được đăng ký.');
-        const user = {
-          name: $('#registerName').value.trim(),
-          email,
-          password: $('#registerPassword').value,
-          contact: $('#registerContact').value.trim(),
-          role: state.users.length === 0 ? 'admin' : 'user',
-          createdAt: Date.now()
-        };
-        state.users.push(user);
-        state.sessionEmail = email;
-        setState(state);
-        closeModal('authModal');
-        event.target.reset();
-        toast(user.role === 'admin' ? 'Đã tạo tài khoản admin đầu tiên.' : 'Đã tạo tài khoản.');
-      });
-
-      $('#loginForm').addEventListener('submit', event => {
-        event.preventDefault();
-        const state = getState();
-        const email = $('#loginEmail').value.trim().toLowerCase();
-        const user = state.users.find(item => item.email === email && item.password === $('#loginPassword').value);
-        if (!user) return toast('Email hoặc mật khẩu chưa đúng.');
-        state.sessionEmail = user.email;
-        setState(state);
-        closeModal('authModal');
-        event.target.reset();
-        toast('Đăng nhập thành công.');
-      });
-
-      $('#postForm').addEventListener('submit', event => {
-        event.preventDefault();
-        const user = currentUser();
-        if (!user) return requireAuth();
-
-        const file = $('#postImage').files[0];
-        const createProduct = image => {
-          const state = getState();
-          state.products.push({
-            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-            title: $('#postName').value.trim(),
-            price: Number($('#postPrice').value),
-            category: $('#postCategory').value,
-            condition: $('#postCondition').value,
-            place: $('#postPlace').value,
-            description: $('#postDesc').value.trim(),
-            image,
-            status: 'pending',
-            sellerName: user.name,
-            sellerEmail: user.email,
-            sellerContact: user.contact,
-            createdAt: Date.now()
+      $('authSubmit').disabled = true;
+      try{
+        if (authMode === 'signup') {
+          const { data, error } = await db.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name: fullName || email.split('@')[0], line_id: line } }
           });
-          setState(state);
-          closeModal('postModal');
-          event.target.reset();
-          toast(isAdmin() ? 'Bài đã gửi. Bạn có thể duyệt trong Admin Dashboard.' : 'Bài đã gửi và đang chờ admin duyệt.');
-          location.hash = '#admin';
-        };
-
-        if (!file) return createProduct('');
-        const reader = new FileReader();
-        reader.onload = () => createProduct(reader.result);
-        reader.onerror = () => toast('Không đọc được ảnh. Hãy thử ảnh khác.');
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function setupFilters() {
-      ['marketSearch', 'filterCategory', 'filterPrice', 'filterCondition', 'filterPlace', 'sortProducts'].forEach(id => {
-        const el = $('#' + id);
-        if (!el) return;
-        el.addEventListener('input', () => renderMarketplace());
-        el.addEventListener('change', () => renderMarketplace());
-      });
-
-      const logSearch = query => {
-        const clean = query.trim();
-        if (!clean) return;
-        const state = getState();
-        state.searches.push(clean);
-        setState(state);
-      };
-
-      $('#heroSearchBtn').addEventListener('click', () => {
-        const q = $('#heroSearch').value.trim();
-        $('#marketSearch').value = q;
-        logSearch(q);
-        location.hash = '#marketplace';
-        renderMarketplace();
-      });
-      $('#heroSearch').addEventListener('keydown', event => {
-        if (event.key === 'Enter') $('#heroSearchBtn').click();
-      });
-      $('#marketSearch').addEventListener('keydown', event => {
-        if (event.key === 'Enter') logSearch($('#marketSearch').value);
-      });
-      $('#marketSearch').addEventListener('blur', () => logSearch($('#marketSearch').value));
-    }
-
-    function setupAdminTabs() {
-      $$('[data-admin-tab]').forEach(tab => {
-        tab.addEventListener('click', () => {
-          $$('[data-admin-tab]').forEach(item => item.className = 'btn btn-ghost btn-small');
-          tab.className = 'btn btn-dark btn-small';
-          $$('.admin-view').forEach(view => view.classList.remove('is-visible'));
-          const target = tab.getAttribute('data-admin-tab');
-          if (target === 'pending') $('#adminPending').classList.add('is-visible');
-          if (target === 'all') $('#adminAll').classList.add('is-visible');
-          if (target === 'users') $('#adminUsers').classList.add('is-visible');
-        });
-      });
-    }
-
-    function setupNavigation() {
-      $('#mobileToggle').addEventListener('click', () => {
-        const open = document.body.classList.toggle('menu-open');
-        $('#mobileToggle').setAttribute('aria-expanded', open ? 'true' : 'false');
-      });
-      $$('#navLinks a').forEach(link => link.addEventListener('click', () => document.body.classList.remove('menu-open')));
-      $$('[data-close-modal]').forEach(btn => btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close-modal'))));
-      $$('.modal-backdrop').forEach(backdrop => backdrop.addEventListener('click', event => {
-        if (event.target === backdrop) closeModal(backdrop.id);
-      }));
-      document.addEventListener('keydown', event => {
-        if (event.key === 'Escape') $$('.modal-backdrop.is-visible').forEach(modal => closeModal(modal.id));
-      });
-    }
-
-    function setupReveal() {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('in-view');
-            observer.unobserve(entry.target);
+          if (error) throw error;
+          if (data.session) {
+            await ensureProfile(data.user, fullName, line);
+            setMsg($('authMsg'), 'Tạo tài khoản thành công.');
+            setTimeout(closeAuth, 650);
+          } else {
+            setMsg($('authMsg'), 'Đăng ký thành công. Hãy kiểm tra email xác nhận nếu Supabase đang bật email confirmation.');
           }
-        });
-      }, { threshold: 0.16 });
-      $$('.reveal').forEach(el => observer.observe(el));
+        } else {
+          const { error } = await db.auth.signInWithPassword({ email, password });
+          if (error) throw error;
+          setMsg($('authMsg'), 'Đăng nhập thành công.');
+          setTimeout(closeAuth, 550);
+        }
+      } catch(err) {
+        setMsg($('authMsg'), err.message || 'Có lỗi xảy ra.', true);
+      } finally {
+        $('authSubmit').disabled = false;
+      }
     }
 
-    setupNavigation();
-    setupForms();
-    setupFilters();
-    setupAdminTabs();
-    setupReveal();
-    renderAll();
+    async function ensureProfile(user, fullName='', line=''){
+      if (!user) return null;
+      const fallbackName = fullName || user.user_metadata?.full_name || user.email?.split('@')[0] || 'BARO user';
+      const payload = {
+        id: user.id,
+        email: user.email,
+        full_name: fallbackName,
+        line_id: line || user.user_metadata?.line_id || null,
+        updated_at: new Date().toISOString()
+      };
+      const { data, error } = await db.from('profiles').upsert(payload, { onConflict:'id' }).select().single();
+      if (error) console.warn('ensureProfile:', error.message);
+      return data;
+    }
+
+    async function refreshSession(){
+      if (!configured) return;
+      const { data } = await db.auth.getSession();
+      currentUser = data.session?.user || null;
+      currentProfile = null;
+      if (currentUser) await loadProfile();
+      renderAuthState();
+      await loadAll();
+    }
+
+    async function loadProfile(){
+      if (!currentUser) return;
+      let { data, error } = await db.from('profiles').select('*').eq('id', currentUser.id).maybeSingle();
+      if (error) console.warn(error.message);
+      if (!data) data = await ensureProfile(currentUser);
+      currentProfile = data;
+    }
+
+    function renderAuthState(){
+      const logged = !!currentUser;
+      $('authBtn').textContent = logged ? (currentProfile?.full_name || 'Tài khoản') : 'Đăng nhập';
+      document.querySelectorAll('.auth-only').forEach(el => el.style.display = logged ? '' : 'none');
+      document.querySelectorAll('.auth-note').forEach(el => el.style.display = logged ? 'none' : 'block');
+      $('myAuthNotice').style.display = logged ? 'none' : 'block';
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin() ? '' : 'none');
+      document.querySelectorAll('.admin-link').forEach(el => el.style.display = isAdmin() ? '' : 'none');
+      if (logged && currentProfile?.line_id) $('contactInput').value = currentProfile.line_id;
+    }
+
+    async function signOut(){
+      await db.auth.signOut();
+      currentUser = null;
+      currentProfile = null;
+      renderAuthState();
+      await loadAll();
+    }
+
+    async function loadAll(){
+      if (!configured) return;
+      await Promise.allSettled([
+        loadMarketplace(),
+        loadMyListings(),
+        loadPulse(),
+        loadAdmin()
+      ]);
+    }
+
+    function buildMarketplaceQuery(){
+      let query = db.from('listings').select('*').in('status',['approved','sold']).order('created_at', { ascending:false });
+      const search = $('searchInput').value.trim();
+      const cat = $('categoryFilter').value;
+      const cond = $('conditionFilter').value;
+      if (search) {
+        const safe = search.replaceAll('%','').replaceAll(',',' ');
+        query = query.or(`title.ilike.%${safe}%,description.ilike.%${safe}%,meet_area.ilike.%${safe}%`);
+      }
+      if (cat) query = query.eq('category', cat);
+      if (cond) query = query.eq('condition', cond);
+      return query;
+    }
+
+    async function logSearchTerm(term){
+      if (!term || term.length < 2 || !configured) return;
+      try{
+        await db.from('search_logs').insert({ query: term.slice(0,80), user_id: currentUser?.id || null });
+      }catch(e){/* ignore */}
+    }
+
+    async function loadMarketplace(){
+      const search = $('searchInput').value.trim();
+      let { data, error } = await buildMarketplaceQuery();
+      if (error) {
+        renderEmpty($('marketGrid'), 'Không tải được marketplace', error.message);
+        return;
+      }
+      let items = data || [];
+      const priceFilter = $('priceFilter').value;
+      if (priceFilter === 'under100') items = items.filter(x => Number(x.price) < 100);
+      if (priceFilter === '100to300') items = items.filter(x => Number(x.price) >= 100 && Number(x.price) <= 300);
+      if (priceFilter === 'over300') items = items.filter(x => Number(x.price) > 300);
+      const sort = $('sortFilter').value;
+      if (sort === 'low') items.sort((a,b)=>Number(a.price)-Number(b.price));
+      if (sort === 'high') items.sort((a,b)=>Number(b.price)-Number(a.price));
+      marketplaceCache = items;
+      renderListings($('marketGrid'), items, 'market');
+      renderPhonePreview(items);
+      if (search) logSearchTerm(search);
+    }
+
+    function renderEmpty(container, title, desc){
+      container.innerHTML = `<div class="empty" style="grid-column:1/-1"><strong>${escapeHTML(title)}</strong>${escapeHTML(desc)}</div>`;
+    }
+
+    function renderListings(container, items, mode){
+      if (!items?.length) {
+        if (mode === 'market') renderEmpty(container, 'Chưa có bài công khai', 'Mời 20–50 user đầu tiên đăng món thật để BARO bắt đầu có marketplace.');
+        else renderEmpty(container, 'Chưa có bài nào', 'Khi bạn đăng bài, trạng thái bài sẽ hiển thị ở đây.');
+        return;
+      }
+      container.innerHTML = items.map(item => cardHTML(item, mode)).join('');
+      container.querySelectorAll('[data-contact]').forEach(btn => btn.addEventListener('click', () => revealContact(btn.dataset.contact)));
+      container.querySelectorAll('[data-sold]').forEach(btn => btn.addEventListener('click', () => markSold(btn.dataset.sold)));
+      container.querySelectorAll('[data-delete-own]').forEach(btn => btn.addEventListener('click', () => deleteOwn(btn.dataset.deleteOwn)));
+    }
+
+    function cardHTML(item, mode='market'){
+      const status = item.status || 'pending';
+      const img = item.image_url ? `<img src="${escapeHTML(item.image_url)}" alt="${escapeHTML(item.title)}">` : `<div class="placeholder-art">${escapeHTML(item.category || 'BARO')}</div>`;
+      const canOwnerAction = mode === 'my' && ['approved','pending'].includes(status);
+      return `
+        <article class="listing">
+          <div class="listing-img">
+            ${img}
+            <span class="status ${escapeHTML(status)}">${escapeHTML(STATUS_LABEL[status] || status)}</span>
+          </div>
+          <div class="listing-body">
+            <h3>${escapeHTML(item.title)}</h3>
+            <p class="desc">${escapeHTML(item.description)}</p>
+            <div class="meta">
+              <span class="tag">${escapeHTML(item.category)}</span>
+              <span class="tag">${escapeHTML(item.condition)}</span>
+              <span class="tag">${escapeHTML(item.meet_area)}</span>
+            </div>
+            <div class="price">${money(item.price)}</div>
+            <div class="actions">
+              ${mode === 'market' ? `<button class="btn small" data-contact="${escapeHTML(item.contact_method || '')}">Liên hệ người bán</button>` : ''}
+              ${canOwnerAction ? `<button class="btn green small" data-sold="${item.id}">Đã bán</button>` : ''}
+              ${mode === 'my' && ['pending','rejected'].includes(status) ? `<button class="btn red small" data-delete-own="${item.id}">Xóa bài</button>` : ''}
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function revealContact(contact){
+      if (!currentUser) { openAuth('login'); return; }
+      if (!contact) alert('Người bán chưa để thông tin liên hệ.');
+      else alert(`Liên hệ người bán:\\n${contact}\\n\\nGợi ý: hẹn ở nơi công cộng quanh trường.`);
+    }
+
+    async function handleListingSubmit(e){
+      e.preventDefault();
+      if (!currentUser) { openAuth('login'); return; }
+      const btn = $('submitListingBtn');
+      btn.disabled = true;
+      setMsg($('listingMsg'), 'Đang gửi bài...');
+      try{
+        let imageUrl = null;
+        const file = $('imageInput').files[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) throw new Error('Ảnh nên nhỏ hơn 5MB.');
+          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+          const path = `${currentUser.id}/${Date.now()}-${slug($('titleInput').value)}.${ext}`;
+          const up = await db.storage.from('listing-images').upload(path, file, { cacheControl:'3600', upsert:false });
+          if (up.error) throw up.error;
+          const { data } = db.storage.from('listing-images').getPublicUrl(path);
+          imageUrl = data.publicUrl;
+        }
+
+        const payload = {
+          seller_id: currentUser.id,
+          seller_name: currentProfile?.full_name || currentUser.email?.split('@')[0],
+          seller_email: currentUser.email,
+          title: $('titleInput').value.trim(),
+          description: $('descInput').value.trim(),
+          category: $('categoryInput').value,
+          price: Number($('priceInput').value),
+          condition: $('conditionInput').value,
+          meet_area: $('areaInput').value,
+          contact_method: $('contactInput').value.trim(),
+          image_url: imageUrl,
+          status: 'pending'
+        };
+        const { error } = await db.from('listings').insert(payload);
+        if (error) throw error;
+        $('listingForm').reset();
+        if (currentProfile?.line_id) $('contactInput').value = currentProfile.line_id;
+        setMsg($('listingMsg'), 'Đã gửi bài. Admin sẽ duyệt trước khi bài hiện công khai.');
+        await loadAll();
+      } catch(err) {
+        setMsg($('listingMsg'), err.message || 'Không gửi được bài.', true);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function loadMyListings(){
+      if (!currentUser) {
+        $('myGrid').innerHTML = '';
+        return;
+      }
+      const { data, error } = await db.from('listings').select('*').eq('seller_id', currentUser.id).order('created_at', {ascending:false});
+      if (error) { renderEmpty($('myGrid'), 'Không tải được tin của tôi', error.message); return; }
+      renderListings($('myGrid'), data || [], 'my');
+    }
+
+    async function markSold(id){
+      if (!currentUser) return;
+      if (!confirm('Đánh dấu món này là đã bán?')) return;
+      const { error } = await db.from('listings').update({ status:'sold', updated_at:new Date().toISOString() }).eq('id', id);
+      if (error) alert(error.message);
+      await loadAll();
+    }
+
+    async function deleteOwn(id){
+      if (!currentUser) return;
+      if (!confirm('Xóa bài này?')) return;
+      const { error } = await db.from('listings').delete().eq('id', id);
+      if (error) alert(error.message);
+      await loadAll();
+    }
+
+    function renderPhonePreview(items){
+      const list = $('phoneLiveList');
+      const live = (items || []).slice(0,3);
+      if (!live.length) {
+        list.innerHTML = `<div class="mini-card"><div class="mini-img">0</div><div><b>Chưa có bài công khai</b><span>Dữ liệu sẽ hiện khi admin duyệt</span></div></div>`;
+        return;
+      }
+      list.innerHTML = live.map(item => `
+        <div class="mini-card">
+          <div class="mini-img">${item.image_url ? `<img src="${escapeHTML(item.image_url)}" alt="">` : 'BARO'}</div>
+          <div><b>${escapeHTML(item.title)}</b><span>${money(item.price)} · ${escapeHTML(item.meet_area)}</span></div>
+        </div>
+      `).join('');
+    }
+
+    async function loadPulse(){
+      if (!configured) return;
+      let publicListings = 0, pending = 0, sold = 0, users = '—';
+      try{
+        const pub = await db.from('listings').select('id,status', { count:'exact', head:false }).in('status',['approved','sold']);
+        publicListings = pub.data?.length || 0;
+        sold = pub.data?.filter(x=>x.status==='sold').length || 0;
+        const pend = await db.from('listings').select('id', { count:'exact', head:true }).eq('status','pending');
+        pending = pend.count ?? 0;
+        if (isAdmin()) {
+          const userCount = await db.from('profiles').select('id', { count:'exact', head:true });
+          users = userCount.count ?? 0;
+        }
+      }catch(e){/* policies may hide admin stats */}
+      $('heroUsers').textContent = users;
+      $('heroListings').textContent = String(publicListings);
+      $('heroPending').textContent = String(pending);
+      const pct = Math.min(100, Math.max(8, (publicListings + sold) * 8));
+      $('phonePulseBar').style.width = pct + '%';
+    }
+
+    async function loadAdmin(){
+      if (!isAdmin()) return;
+      const [profiles, listings, pending] = await Promise.all([
+        db.from('profiles').select('*').order('created_at', {ascending:false}),
+        db.from('listings').select('*').order('created_at', {ascending:false}),
+        db.from('listings').select('*').eq('status','pending').order('created_at', {ascending:true})
+      ]);
+
+      if (!profiles.error) renderUsersTable(profiles.data || []);
+      if (!pending.error) renderPendingTable(pending.data || []);
+      if (!listings.error) {
+        const all = listings.data || [];
+        $('statUsers').textContent = String((profiles.data || []).length);
+        $('statListings').textContent = String(all.length);
+        $('statPending').textContent = String(all.filter(x=>x.status==='pending').length);
+        $('statSold').textContent = String(all.filter(x=>x.status==='sold').length);
+      }
+    }
+
+    function renderPendingTable(items){
+      const box = $('pendingTable');
+      if (!items.length) { box.innerHTML = `<div class="empty"><strong>Không có bài chờ duyệt</strong>Mọi thứ đang sạch.</div>`; return; }
+      box.innerHTML = `<table><thead><tr><th>Món</th><th>Người bán</th><th>Giá</th><th>Action</th></tr></thead><tbody>
+        ${items.map(x=>`<tr>
+          <td><b>${escapeHTML(x.title)}</b><br><span style="color:#aeb5c0">${escapeHTML(x.category)} · ${escapeHTML(x.meet_area)}</span></td>
+          <td>${escapeHTML(x.seller_name || x.seller_email || '')}</td>
+          <td>${money(x.price)}</td>
+          <td>
+            <button class="btn green small" data-admin-approve="${x.id}">Duyệt</button>
+            <button class="btn ghost small" data-admin-reject="${x.id}">Từ chối</button>
+            <button class="btn red small" data-admin-delete="${x.id}">Xóa</button>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>`;
+      box.querySelectorAll('[data-admin-approve]').forEach(b=>b.addEventListener('click',()=>adminSetStatus(b.dataset.adminApprove,'approved')));
+      box.querySelectorAll('[data-admin-reject]').forEach(b=>b.addEventListener('click',()=>adminSetStatus(b.dataset.adminReject,'rejected')));
+      box.querySelectorAll('[data-admin-delete]').forEach(b=>b.addEventListener('click',()=>adminDelete(b.dataset.adminDelete)));
+    }
+
+    function renderUsersTable(users){
+      const box = $('usersTable');
+      if (!users.length) { box.innerHTML = `<div class="empty"><strong>Chưa có user</strong>User mới sẽ hiện tại đây.</div>`; return; }
+      box.innerHTML = `<table><thead><tr><th>Tên</th><th>Email</th><th>Role</th><th>Action</th></tr></thead><tbody>
+        ${users.map(u=>`<tr>
+          <td>${escapeHTML(u.full_name || '')}</td>
+          <td>${escapeHTML(u.email || '')}</td>
+          <td>${escapeHTML(u.role || 'user')}</td>
+          <td>${u.role === 'admin' ? '<span class="pill">Admin</span>' : `<button class="btn soft small" data-promote="${u.id}">Cho làm admin</button>`}</td>
+        </tr>`).join('')}
+      </tbody></table>`;
+      box.querySelectorAll('[data-promote]').forEach(b=>b.addEventListener('click',()=>promoteUser(b.dataset.promote)));
+    }
+
+    async function adminSetStatus(id, status){
+      if (!isAdmin()) return;
+      const { error } = await db.from('listings').update({ status, updated_at:new Date().toISOString() }).eq('id', id);
+      if (error) alert(error.message);
+      await loadAll();
+    }
+
+    async function adminDelete(id){
+      if (!isAdmin()) return;
+      if (!confirm('Admin xóa bài này?')) return;
+      const { error } = await db.from('listings').delete().eq('id', id);
+      if (error) alert(error.message);
+      await loadAll();
+    }
+
+    async function promoteUser(id){
+      if (!isAdmin()) return;
+      if (!confirm('Chuyển user này thành admin?')) return;
+      const { error } = await db.from('profiles').update({ role:'admin', updated_at:new Date().toISOString() }).eq('id', id);
+      if (error) alert(error.message);
+      await loadAdmin();
+    }
+
+    function wireEvents(){
+      $('authBtn').addEventListener('click', () => currentUser ? signOut() : openAuth('login'));
+      $('closeAuth').addEventListener('click', closeAuth);
+      $('authModal').addEventListener('click', e => { if (e.target.id === 'authModal') closeAuth(); });
+      $('loginTab').addEventListener('click', () => { authMode='login'; updateAuthTabs(); });
+      $('signupTab').addEventListener('click', () => { authMode='signup'; updateAuthTabs(); });
+      $('authForm').addEventListener('submit', handleAuthSubmit);
+      $('listingForm').addEventListener('submit', handleListingSubmit);
+      $('refreshBtn').addEventListener('click', loadAll);
+      const reloadMarket = debounce(loadMarketplace, 350);
+      ['searchInput','categoryFilter','priceFilter','conditionFilter','sortFilter'].forEach(id => $(id).addEventListener('input', reloadMarket));
+      $('menuBtn').addEventListener('click', () => alert('Menu: Marketplace · Đăng bán · Tin của tôi · An toàn'));
+    }
+
+    function initReveal(){
+      const obs = new IntersectionObserver((entries)=>{
+        entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('on'); });
+      }, {threshold:.12});
+      document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+    }
+
+    async function init(){
+      showSetupIfNeeded();
+      wireEvents();
+      initReveal();
+      if (!configured) return;
+
+      db.auth.onAuthStateChange(async () => {
+        const { data } = await db.auth.getSession();
+        currentUser = data.session?.user || null;
+        currentProfile = null;
+        if (currentUser) await loadProfile();
+        renderAuthState();
+        await loadAll();
+      });
+      await refreshSession();
+    }
+
+    init();
   </script>
 </body>
 </html>
